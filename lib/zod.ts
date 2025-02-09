@@ -19,7 +19,7 @@ const getNameSchema = () => {
     .max(32, "Name can not be longer than 32 characters");
 };
 
-export const singUpSchema = object({
+export const signUpSchema = object({
   name: getNameSchema(),
   email: getEmailSchema(),
   password: getPasswordSchema("password"),

@@ -17,7 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { singUpSchema } from "@/lib/zod";
+import { signUpSchema } from "@/lib/zod";
 import { authClient } from "@/auth-client";
 
 import { useState } from "react";
@@ -27,8 +27,8 @@ export default function SignUp() {
   const [pending, setPending] = useState(false);
   const { toast } = useToast();
 
-  const form = useForm<z.infer<typeof singUpSchema>>({
-    resolver: zodResolver(singUpSchema),
+  const form = useForm<z.infer<typeof signUpSchema>>({
+    resolver: zodResolver(signUpSchema),
     defaultValues: {
       name: "",
       email: "",
@@ -37,7 +37,7 @@ export default function SignUp() {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof singUpSchema>) => {
+  const onSubmit = async (values: z.infer<typeof signUpSchema>) => {
     await authClient.signUp.email(
       {
         email: values.email,
@@ -82,7 +82,7 @@ export default function SignUp() {
                 <FormField
                   control={form.control}
                   key={field}
-                  name={field as keyof z.infer<typeof singUpSchema>}
+                  name={field as keyof z.infer<typeof signUpSchema>}
                   render={({ field: fieldProps }) => (
                     <FormItem>
                       <FormLabel>
