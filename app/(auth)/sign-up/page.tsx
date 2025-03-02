@@ -1,12 +1,5 @@
 "use client";
 
-import LoadingButton from "@/components/loading-button";
-import Link from "next/link";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-
-import { useForm } from "react-hook-form";
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
@@ -17,9 +10,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { signUpSchema } from "@/lib/zod";
-import { authClient } from "@/auth-client";
+import LoadingButton from "@/components/loading-button";
 
+import Link from "next/link";
+
+import { signUpSchema } from "@/lib/zod";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { authClient } from "@/auth-client";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -52,14 +51,13 @@ export default function SignUp() {
           toast({
             title: "Account created",
             description:
-              "Your account has been created. Please verify your email to continue",
+              "Your account has been created. Check your email for a verification link.",
           });
-          setPending(false);
         },
         onError: (ctx) => {
           console.log("error", ctx);
           toast({
-            title: "Error",
+            title: "Something went wrong",
             description: ctx.error.message ?? "Something went wrong.",
           });
         },
@@ -67,6 +65,7 @@ export default function SignUp() {
     );
     setPending(false);
   };
+
   return (
     <div className="grow flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -99,22 +98,21 @@ export default function SignUp() {
                           }
                           placeholder={`Enter your ${field}`}
                           {...fieldProps}
-                          //   autoComplete="off"
+                          autoComplete="off"
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
-                ></FormField>
+                />
               ))}
-              <LoadingButton pending={pending}>Sign Up</LoadingButton>
+              <LoadingButton pending={pending}>Sign up</LoadingButton>
             </form>
           </Form>
           <div className="mt-4 text-center text-sm">
-            <Link
-              href="/sign-in"
-              className="text-primary hover:underline"
-            ></Link>
+            <Link href="/sign-in" className="text-primary hover:underline">
+              Already have an account? Sign in
+            </Link>
           </div>
         </CardContent>
       </Card>

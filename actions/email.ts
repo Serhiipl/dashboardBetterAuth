@@ -1,8 +1,7 @@
 "use server";
 import sgMail from "@sendgrid/mail";
-// Function to send verification email using SendGrid
 
-export async function sendVerificationEmail({
+export async function sendEmail({
   to,
   subject,
   text,
@@ -12,23 +11,30 @@ export async function sendVerificationEmail({
   text: string;
 }) {
   if (!process.env.SENDGRID_API_KEY) {
-    throw new Error("SENDGRID_API_KEY is not set");
+    throw new Error("SENDGRID_API_KEY environment variable is not set");
   }
-  if (!process.env.SENDGRID_FROM_EMAIL) {
-    throw new Error("SENDGRID_FROM_EMAIL is not set");
+  if (!process.env.EMAIL_FROM) {
+    throw new Error("EMAIL_FROM environment variable is not set");
   }
+
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
   const message = {
     to: to.toLowerCase().trim(),
-    from: process.env.SENDGRID_FROM_EMAIL,
+    from: process.env.EMAIL_FROM,
     subject: subject.trim(),
     text: text.trim(),
   };
+
   try {
     const [response] = await sgMail.send(message);
+
     if (response.statusCode !== 202) {
-      throw new Error(`SendGrid API error: ${response.statusCode}`);
+      throw new Error(
+        `SendGrid API returned status code ${response.statusCode}`
+      );
     }
+
     return {
       success: true,
       messageId: response.headers["x-message-id"],
