@@ -22,11 +22,13 @@ import { authClient } from "@/auth-client";
 import { useRouter } from "next/navigation";
 import { ErrorContext } from "@better-fetch/fetch";
 import { useToast } from "@/hooks/use-toast";
+import { GithubIcon } from "lucide-react";
 
 export default function SingIn() {
   const router = useRouter();
   const { toast } = useToast();
   const [pendingCredentials, setPendingCredentials] = useState(false);
+  const [pendingGithub, setPendingGithub] = useState(false);
 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -62,6 +64,30 @@ export default function SingIn() {
       }
     );
     setPendingCredentials(false);
+  };
+  const handleSignInWithGithub = async () => {
+    await authClient.signIn.social(
+      {
+        provider: "github",
+      },
+      {
+        onRequest: () => {
+          setPendingGithub(true);
+        },
+        onSuccess: async () => {
+          router.push("/");
+          router.refresh();
+        },
+        onError: (ctx: ErrorContext) => {
+          toast({
+            title: "Something went wrong",
+            description: ctx.error.message ?? "Something went wrong.",
+            variant: "destructive",
+          });
+        },
+      }
+    );
+    setPendingGithub(false);
   };
   return (
     <div className="flex items-center justify-center p-4 grow">
@@ -107,6 +133,15 @@ export default function SingIn() {
               </LoadingButton>
             </form>
           </Form>
+          <div className="mt-4">
+            <LoadingButton
+              pending={pendingGithub}
+              onClick={handleSignInWithGithub}
+            >
+              <GithubIcon className="w-4 h-4 mr-2" />
+              Continue with Github
+            </LoadingButton>
+          </div>
           <div className="mt-4 text-center text-sm">
             <Link
               href="/forgot-password"

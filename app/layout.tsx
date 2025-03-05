@@ -29,14 +29,15 @@ export default async function RootLayout({
   const session = await auth.api.getSession({
     headers: await headers(),
   });
+  console.log("session", session);
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Navbar session={session} />
-
-        {children}
+        <div className="min-h-screen pt-20 flex flex-col">{children}</div>
+        {/* {children} */}
         <Toaster />
       </body>
     </html>
