@@ -1,3 +1,5 @@
+"use client";
+
 import { authClient } from "@/auth-client";
 import LoadingButton from "@/components/loading-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
