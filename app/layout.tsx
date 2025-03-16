@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "../components/navbar";
 import { Toaster } from "@/components/ui/toaster";
-import { auth } from "@/lib/auth";
+import { auth } from "@/auth";
 import { headers } from "next/headers";
 
 const geistSans = Geist({
@@ -29,13 +29,14 @@ export default async function RootLayout({
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  console.log("session", session);
+  console.log(session);
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Navbar session={session} />
+        <Navbar />
         <div className="min-h-screen pt-20 flex flex-col">{children}</div>
         {/* {children} */}
         <Toaster />

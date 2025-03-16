@@ -3,7 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "@/lib/prisma";
 import { sendEmail } from "@/actions/email";
 import { openAPI } from "better-auth/plugins";
-import { admin } from "better-auth/plugins";
+// import { admin } from "better-auth/plugins";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -24,23 +24,23 @@ export const auth = betterAuth({
         required: false,
       },
     },
-    changeEmail: {
-      enabled: true,
-      sendChangeEmailVerification: async ({ newEmail, url }) => {
-        await sendEmail({
-          to: newEmail,
-          subject: "Verify your email change",
-          text: `Click the link to verify: ${url}`,
-        });
-      },
-    },
+    // changeEmail: {
+    //   enabled: true,
+    //   sendChangeEmailVerification: async ({ newEmail, url }) => {
+    //     await sendEmail({
+    //       to: newEmail,
+    //       subject: "Verify your email change",
+    //       text: `Click the link to verify: ${url}`,
+    //     });
+    //   },
+    // },
   },
-  account: {
-    accountLinking: {
-      enabled: true,
-      trustedProviders: ["emailAndPassword, github"],
-    },
-  },
+  // account: {
+  //   accountLinking: {
+  //     enabled: true,
+  //     trustedProviders: ["emailAndPassword, github"],
+  //   },
+  // },
   socialProviders: {
     github: {
       clientId: process.env.GITHUB_CLIENT_ID as string,
@@ -49,9 +49,9 @@ export const auth = betterAuth({
   },
   plugins: [
     openAPI(),
-    admin({
-      impersonationSessionDuration: 60 * 60 * 24 * 7, // 7 days
-    }),
+    // admin({
+    //   impersonationSessionDuration: 60 * 60 * 24 * 7, // 7 days
+    // }),
   ], // api/auth/reference
   emailAndPassword: {
     enabled: true,
