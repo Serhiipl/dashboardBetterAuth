@@ -37,23 +37,60 @@ function ResetPasswordContent() {
 
   const onSubmit = async (data: z.infer<typeof resetPasswordSchema>) => {
     setIsPending(true);
-    const { error } = await authClient.resetPassword({
-      newPassword: data.password,
-    });
-    if (error) {
+
+    try {
+      const token = searchParams.get("token"); // Отримуємо токен із URL
+
+      if (!data.password || !data.confirmPassword) {
+        toast({
+          title: "Error",
+          description: "Please fill in all required fields.",
+          variant: "destructive",
+        });
+        setIsPending(false);
+        return;
+      }
+
+      if (!token) {
+        toast({
+          title: "Error",
+          description: "Invalid or missing reset token.",
+          variant: "destructive",
+        });
+        setIsPending(false);
+        return;
+      }
+
+      const response = await authClient.resetPassword({
+        newPassword: data.password,
+        token, // Додаємо токен у запит
+      });
+
+      if (response?.error) {
+        toast({
+          title: "Error",
+          description: response.error.message || "An unknown error occurred.",
+          variant: "destructive",
+        });
+
+        form.setFocus("password");
+      } else {
+        toast({
+          title: "Success",
+          description: "Password reset successfully",
+        });
+        router.push("/sign-in");
+      }
+    } catch (err) {
+      console.error("Password reset error:", err);
       toast({
         title: "Error",
-        description: error.message,
+        description: "Something went wrong. Please try again.",
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Success",
-        description: "Password reset successfully",
-      });
-      router.push("/sign-in");
+    } finally {
+      setIsPending(false);
     }
-    setIsPending(false);
   };
 
   if (error === "invalid_token") {
@@ -66,17 +103,16 @@ function ResetPasswordContent() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <p className="text-center text-gray-600">
-                The reset link is invalid or has expired. Please request a new
-                one.
-              </p>
-            </div>
+            <p className="text-center text-gray-600">
+              The reset link is invalid or has expired. Please request a new
+              one.
+            </p>
           </CardContent>
         </Card>
       </div>
     );
   }
+
   return (
     <div className="grow flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
