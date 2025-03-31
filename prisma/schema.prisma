@@ -28,6 +28,7 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  Review        Review[]
 }
 
 model Session {
@@ -62,10 +63,134 @@ model Account {
 }
 
 model Verification {
-  id         String   @id @default(cuid()) @map("_id")
+  serviceId  String   @id @default(uuid()) @map("_id")
   identifier String
   value      String
   expiresAt  DateTime
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+model Service {
+  serviceId   String    @id @default(cuid()) @map("_id") // Unique service identifier
+  name        String // Name of the service
+  description String // Detailed description of the service
+  price       Float // Standard price of the service
+  duration    Int // Duration in minutes (e.g., 60 for 1 hour)
+  active      Boolean   @default(false) // Whether the service is currently available
+  createdAt   DateTime  @default(now()) // Timestamp when the service was created
+  updatedAt   DateTime  @updatedAt // Timestamp when the service was last updated
+  deletedAt   DateTime? // Timestamp when the service was deleted (soft delete)
+  deletedBy   String? // ID of the user who deleted the service
+  categoryId  String? // Foreign key for category
+  category    Category? @relation(fields: [categoryId], references: [id]) // Service category
+
+  // Relations
+  images    Image[] // One-to-many relation with images
+  discount  Discount? // One-to-one relation with discounts
+  seo       Seo? // One-to-one relation with SEO data
+  staff     ServiceStaff[] // Many-to-many relation with staff
+  analytics ServiceAnalytics? // One-to-one relation with analytics
+  Review    Review[]
+
+  @@index([name])
+  @@index([categoryId])
+  @@index([price])
+  @@index([active])
+  @@index([createdAt])
+}
+
+model Category {
+  id        String    @id @default(cuid()) @map("_id") // Unique identifier for the category
+  name      String    @unique // Category name (e.g., "Brows", "Lashes")
+  slug      String    @unique // URL-friendly identifier for the category
+  createdAt DateTime  @default(now()) // Timestamp when the category was created
+  updatedAt DateTime  @updatedAt // Timestamp when the category was last updated
+  deletedAt DateTime? // Timestamp when the category was deleted (soft delete)
+  services  Service[] // One-to-many relation with services
+}
+
+model Image {
+  id        String   @id @default(cuid()) @map("_id") // Unique image identifier
+  serviceId String // Foreign key for service
+  service   Service  @relation(fields: [serviceId], references: [serviceId], onDelete: Cascade)
+  url       String // URL of the image
+  createdAt DateTime @default(now()) // Timestamp when the image was added
+
+  @@index([serviceId])
+}
+
+model Discount {
+  id              String    @id @default(cuid()) @map("_id") // Unique discount identifier
+  serviceId       String    @unique // Foreign key for service (One-to-One)
+  service         Service   @relation(fields: [serviceId], references: [serviceId], onDelete: Cascade)
+  discountPrice   Float // Discounted price
+  discountEndDate DateTime? // End date for the discount
+
+  @@index([discountEndDate])
+}
+
+model Seo {
+  id             String   @id @default(cuid()) @map("_id") // Unique SEO identifier
+  serviceId      String   @unique // Foreign key for service (One-to-One)
+  service        Service  @relation(fields: [serviceId], references: [serviceId], onDelete: Cascade)
+  seoTitle       String? // SEO-friendly title for the service
+  seoDescription String? // SEO meta description for better search engine visibility
+  slug           String?  @unique // URL-friendly identifier for the service (e.g., "permanent-makeup")
+  tags           String[] // Search tags to improve discoverability
+}
+
+model ServiceAnalytics {
+  id           String  @id @default(cuid()) @map("_id") // Unique identifier
+  serviceId    String  @unique // Foreign key for service (One-to-One)
+  service      Service @relation(fields: [serviceId], references: [serviceId], onDelete: Cascade)
+  views        Int     @default(0) // Number of times the service has been viewed
+  rating       Float? // Average rating of the service from customer reviews
+  reviewsCount Int     @default(0) // Number of reviews received
+
+  @@index([views])
+  @@index([rating])
+}
+
+model ServiceStaff {
+  id        String @id @default(cuid()) @map("_id") // Unique identifier for the relationship
+  serviceId String // Foreign key to Service
+  staffId   String // Foreign key to Staff
+
+  service Service @relation(fields: [serviceId], references: [serviceId], onDelete: Cascade)
+  staff   Staff   @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  @@unique([serviceId, staffId])
+  @@index([serviceId])
+  @@index([staffId])
+}
+
+model Staff {
+  id        String   @id @default(cuid()) @map("_id") // Unique staff identifier
+  name      String // Full name of the staff member
+  email     String   @unique // Contact email
+  phone     String? // Phone number (optional)
+  role      String // Role (e.g., "Brow Artist", "Lash Technician")
+  imageUrl  String? // Profile picture
+  createdAt DateTime @default(now()) // Timestamp when the staff member was added
+  updatedAt DateTime @updatedAt // Timestamp when the staff member's info was last updated
+
+  // Relations
+  services ServiceStaff[] // Many-to-many relation with services
+
+  @@index([name])
+}
+
+model Review {
+  id        String   @id @default(cuid()) @map("_id") // Unique review identifier
+  serviceId String // Foreign key for service
+  userId    String // Foreign key for user
+  rating    Int // Rating out of 5
+  comment   String? // Optional comment
+  createdAt DateTime @default(now()) // Timestamp when the review was created
+
+  service Service @relation(fields: [serviceId], references: [serviceId], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([serviceId])
 }

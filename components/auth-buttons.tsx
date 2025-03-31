@@ -4,6 +4,7 @@ import { authClient } from "@/auth-client";
 import Link from "next/link";
 import SignoutButton from "@/components/signout-button";
 import { Button } from "@/components/ui/button";
+import AdminButton from "./admin-button";
 
 export default function AuthButtons() {
   const { data, isPending } = authClient.useSession();
@@ -22,6 +23,7 @@ export default function AuthButtons() {
     </div>
   ) : (
     <div className="flex items-center gap-2">
+      <AdminButton />
       <SignoutButton />
     </div>
   );

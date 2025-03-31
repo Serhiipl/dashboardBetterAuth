@@ -25,6 +25,7 @@ export default function UsersTable() {
         const response = await authClient.admin.listUsers({
           query: { limit: 10 },
         });
+
         if (response?.data) {
           setUsers(response.data.users as User[]);
         }
