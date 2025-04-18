@@ -7,11 +7,12 @@ import { Button } from "@/components/ui/button";
 import AdminButton from "./admin-button";
 
 export default function AuthButtons() {
-  const { data, isPending } = authClient.useSession();
+  const { data: session, isPending, error } = authClient.useSession();
   if (isPending) return <div>Loading...</div>;
+  if (error) return <div>Error loading session!</div>;
 
-  const session = data;
-  console.log(session);
+  const userRole = session?.user.role;
+
   return !session ? (
     <div className="flex gap-2 justify-center">
       <Link href="/sign-in">
@@ -23,7 +24,7 @@ export default function AuthButtons() {
     </div>
   ) : (
     <div className="flex items-center gap-2">
-      <AdminButton />
+      <AdminButton userRole={userRole} />
       <SignoutButton />
     </div>
   );

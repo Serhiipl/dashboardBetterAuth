@@ -1,20 +1,22 @@
 "use client";
-
-import { authClient } from "@/auth-client";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-export default function AdminButton() {
-  const { data, isPending } = authClient.useSession();
-  if (isPending) return <div>Loading...</div>;
+interface AdminButtonProps {
+  userRole?: string | null; // Optional prop to pass user role
+}
 
-  const session = data;
+export default function AdminButton({ userRole }: AdminButtonProps) {
+  const pathname = usePathname();
+  const isAdminRoute = pathname.startsWith("/admin");
 
-  if (session?.user.role != "admin") return null;
+  if (userRole !== "admin") return null;
+  if (isAdminRoute) return null;
   return (
-    <div className="flex gap-2 justify-center">
-      <Link href="/admin">
-        <Button>Admin</Button>
+    <div className="flex gap-2 justify-center sm:justify-end">
+      <Link href="/admin" aria-label="Go to admin dashboard">
+        <Button title="Admin panel">Admin</Button>
       </Link>
     </div>
   );

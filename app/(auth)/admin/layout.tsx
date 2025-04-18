@@ -1,5 +1,7 @@
+"use client";
 import Link from "next/link";
 import {
+  ClipboardList,
   Home,
   LineChart,
   Package,
@@ -15,8 +17,8 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
+  // BreadcrumbPage,
+  // BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -25,6 +27,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { authClient } from "@/auth-client";
 
 // import { User } from "./user";
 
@@ -37,6 +40,13 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { data: session, isPending, error } = authClient.useSession();
+  if (isPending) return <div>Loading...</div>;
+
+  const userRole = session?.user.role;
+  if (userRole !== "admin") return null;
+  if (error) return <div>Error loading session!</div>;
+
   return (
     <Providers>
       <main className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -69,7 +79,7 @@ function DesktopNav() {
           <span className="sr-only">Acme Inc</span>
         </Link>
 
-        <NavItem href="#" label="Dashboard">
+        <NavItem href="/admin" label="Dashboard">
           <Home className="h-5 w-5" />
         </NavItem>
 
@@ -77,11 +87,15 @@ function DesktopNav() {
           <ShoppingCart className="h-5 w-5" />
         </NavItem>
 
-        <NavItem href="/" label="Products">
-          <Package className="h-5 w-5" />
+        <NavItem
+          href="/admin/dashboard/services"
+          label="Usługi"
+          // userRole={userRole}
+        >
+          <ClipboardList className="h-5 w-5" />
         </NavItem>
 
-        <NavItem href="/customers" label="Customers">
+        <NavItem href="/admin/dashboard/users" label="Users">
           <Users2 className="h-5 w-5" />
         </NavItem>
 
@@ -175,8 +189,8 @@ function DashboardBreadcrumb() {
             <Link href="#">Dashboard</Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
+        {/* <BreadcrumbSeparator /> */}
+        {/* <BreadcrumbItem>
           <BreadcrumbLink asChild>
             <Link href="#">Products</Link>
           </BreadcrumbLink>
@@ -184,7 +198,7 @@ function DashboardBreadcrumb() {
         <BreadcrumbSeparator />
         <BreadcrumbItem>
           <BreadcrumbPage>All Products</BreadcrumbPage>
-        </BreadcrumbItem>
+        </BreadcrumbItem> */}
       </BreadcrumbList>
     </Breadcrumb>
   );

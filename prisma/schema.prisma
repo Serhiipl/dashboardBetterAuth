@@ -28,7 +28,6 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
-  Review        Review[]
 }
 
 model Session {
@@ -63,7 +62,7 @@ model Account {
 }
 
 model Verification {
-  serviceId  String   @id @default(uuid()) @map("_id")
+  id         String   @id @default(cuid()) @map("_id")
   identifier String
   value      String
   expiresAt  DateTime
@@ -91,7 +90,7 @@ model Service {
   seo       Seo? // One-to-one relation with SEO data
   staff     ServiceStaff[] // Many-to-many relation with staff
   analytics ServiceAnalytics? // One-to-one relation with analytics
-  Review    Review[]
+  // Review    Review[]
 
   @@index([name])
   @@index([categoryId])
@@ -181,16 +180,16 @@ model Staff {
   @@index([name])
 }
 
-model Review {
-  id        String   @id @default(cuid()) @map("_id") // Unique review identifier
-  serviceId String // Foreign key for service
-  userId    String // Foreign key for user
-  rating    Int // Rating out of 5
-  comment   String? // Optional comment
-  createdAt DateTime @default(now()) // Timestamp when the review was created
+// model Review {
+//   id        String   @id @default(cuid()) @map("_id") // Unique review identifier
+//   serviceId String // Foreign key for service
+//   userId    String // Foreign key for user
+//   rating    Int // Rating out of 5
+//   comment   String? // Optional comment
+//   createdAt DateTime @default(now()) // Timestamp when the review was created
 
-  service Service @relation(fields: [serviceId], references: [serviceId], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   service Service @relation(fields: [serviceId], references: [serviceId], onDelete: Cascade)
+//   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([serviceId])
-}
+//   @@index([serviceId])
+// }
