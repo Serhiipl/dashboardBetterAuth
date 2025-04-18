@@ -49,7 +49,6 @@ export async function DELETE(
   context: { params: { serviceId: string } }
 ) {
   try {
-    // Перевірка, чи існує context.params
     if (!context || !context.params) {
       return NextResponse.json("Invalid request format", { status: 400 });
     }
