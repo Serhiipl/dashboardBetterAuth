@@ -3,19 +3,20 @@ import prisma from "@/lib/prisma";
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const body = await request.json();
     const { name, slug } = body;
 
+    const { id } = await context.params;
+
     if (!name) {
-      //подумай чи slug не обовязковий
       return new NextResponse("All fields are required", { status: 400 });
     }
 
     const category = await prisma.category.update({
-      where: { id: params.id },
+      where: { id: id },
       data: { name, slug },
     });
 
@@ -28,10 +29,13 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
+    if (!context || !context.params) {
+      return NextResponse.json("Invalid request format", { status: 400 });
+    }
+    const { id } = await context.params;
 
     if (!id) {
       return NextResponse.json("Category ID is required", { status: 400 });

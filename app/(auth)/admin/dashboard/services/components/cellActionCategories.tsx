@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import useServiceStore, { ServiceProps } from "@/lib/serviceStore";
+import useServiceStore, { ServiceCategory } from "@/lib/serviceStore";
 import { Button } from "@/components/ui/button";
 import { LucideEdit3, MoreHorizontal, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -15,25 +15,26 @@ import {
 
 import toast from "react-hot-toast";
 import { AlertModal } from "@/components/modals/alertModal";
-import { ServiceChangeModal } from "@/components/modals/serviceModal";
-// import { ServiceChangeModal } from "./modals/serviceModal";
+import { ServiceCategoryChangeModal } from "@/components/modals/serviceCategoryModal";
 
 interface CellActionProps {
   className?: string;
-  data: ServiceProps;
+  data: ServiceCategory;
 }
 
-const CellAction: React.FC<CellActionProps> = ({ className, data }) => {
+const CellActionCategory: React.FC<CellActionProps> = ({ className, data }) => {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const deleteService = useServiceStore((state) => state.deleteService);
+  const deleteServiceCategory = useServiceStore(
+    (state) => state.deleteServiceCategory
+  );
 
   const handleDelete = async () => {
     try {
       setLoading(true);
-      await deleteService(data.serviceId);
-      toast.success("Product deleted.");
+      await deleteServiceCategory(data.id);
+      toast.success("Kategoria usunięta.");
     } catch (error) {
       toast.error("Something went wrong");
       console.error("Error deleting service:", error);
@@ -51,10 +52,10 @@ const CellAction: React.FC<CellActionProps> = ({ className, data }) => {
         onConfirm={handleDelete}
         loading={loading}
       />
-      <ServiceChangeModal
+      <ServiceCategoryChangeModal
         isOpen={editOpen}
         onClose={() => setEditOpen(false)}
-        serviceData={data}
+        categoryData={data}
       />
 
       <DropdownMenu>
@@ -69,11 +70,11 @@ const CellAction: React.FC<CellActionProps> = ({ className, data }) => {
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setEditOpen(true)}>
             <LucideEdit3 className="mr-2 h-4 w-4" />
-            Edycja usługi...
+            Edycja kategorii...
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setOpen(true)}>
             <Trash2 className="mr-2 h-4 w-4" />
-            Usunięcie usługi...
+            Usunięcie kategorii...
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -81,4 +82,4 @@ const CellAction: React.FC<CellActionProps> = ({ className, data }) => {
   );
 };
 
-export default CellAction;
+export default CellActionCategory;

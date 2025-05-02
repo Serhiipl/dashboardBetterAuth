@@ -46,7 +46,7 @@ const fetchServiceCategories = async (
   set: (partial: (state: ServiceStore) => Partial<ServiceStore>) => void
 ) => {
   try {
-    const response = await fetch("/api/service-categories");
+    const response = await fetch("/api/categories");
     if (!response.ok) {
       throw new Error("Failed to fetch service categories");
     }
@@ -169,9 +169,9 @@ const useServiceStore = create<ServiceStore>((set) => ({
     }));
     await fetchServiceCategories(set);
   },
-  deleteServiceCategory: async (categoryId) => {
+  deleteServiceCategory: async (id) => {
     try {
-      const response = await fetch(`/api/categories/${categoryId}`, {
+      const response = await fetch(`/api/categories/${id}`, {
         method: "DELETE",
       });
       if (!response.ok) {
@@ -180,9 +180,10 @@ const useServiceStore = create<ServiceStore>((set) => ({
       // Удаление категории с API
       set((state) => ({
         serviceCategories: state.serviceCategories.filter(
-          (category) => category.id !== categoryId
+          (category) => category.id !== category.id
         ),
       }));
+      fetchServiceCategories(set);
     } catch (error) {
       console.error("Error deleting service category:", error);
     }

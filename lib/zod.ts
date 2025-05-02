@@ -1,4 +1,4 @@
-import { object, string } from "zod";
+import { boolean, coerce, object, string } from "zod";
 
 const getPasswordSchema = (type: "password" | "confirmPassword") =>
   string({ required_error: `${type} is required` })
@@ -40,6 +40,17 @@ export const resetPasswordSchema = object({
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
+});
+
+export const serviceFormSchema = object({
+  name: string().min(1, "Nazwa jest wymagana"),
+  description: string().min(1, "Opis jest wymagany"),
+  price: coerce.number().positive("Cena musi być większa niż 0"),
+  duration: coerce
+    .number()
+    .int("Czas musi być liczbą całkowitą")
+    .min(5, "Czas realizacji musi być co najmniej 5 minut"),
+  active: boolean().default(true),
 });
 
 export const serviceCategorySchema = object({
