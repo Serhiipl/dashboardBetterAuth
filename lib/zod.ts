@@ -51,6 +51,7 @@ export const serviceFormSchema = object({
     .int("Czas musi być liczbą całkowitą")
     .min(5, "Czas realizacji musi być co najmniej 5 minut"),
   active: boolean().default(true),
+  categoryId: string().min(1, "Kategoria jest wymagana"), // 🔥 Додано
 });
 
 export const serviceCategorySchema = object({

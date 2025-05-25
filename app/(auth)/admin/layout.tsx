@@ -34,6 +34,8 @@ import { authClient } from "@/auth-client";
 import { NavItem } from "@/components/side-nav-item";
 import { SearchInput } from "@/components/search";
 import Providers from "@/lib/providers";
+import { Toaster } from "react-hot-toast";
+// import { Toaster } from "@/components/ui/toaster";
 
 export default function DashboardLayout({
   children,
@@ -62,6 +64,7 @@ export default function DashboardLayout({
             {children}
           </main>
         </div>
+        <Toaster />
       </main>
     </Providers>
   );

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { removePolishChars } from "@/lib/utils";
 
 export async function PATCH(
   request: Request,
@@ -7,17 +8,48 @@ export async function PATCH(
 ) {
   try {
     const body = await request.json();
-    const { name, slug } = body;
-
+    const { name } = body;
     const { id } = await context.params;
 
     if (!name) {
       return new NextResponse("All fields are required", { status: 400 });
     }
 
+    const generatedSlug = removePolishChars(name)
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "-");
+
+    // Sprawdzamy, czy kategoria o danej nazwie już istnieje
+    const existingCategory = await prisma.category.findFirst({
+      where: {
+        AND: [
+          {
+            OR: [{ name: name }, { slug: generatedSlug }],
+          },
+          {
+            NOT: {
+              id: id,
+            },
+          },
+        ],
+      },
+    });
+
+    if (existingCategory) {
+      return new NextResponse(
+        "Category with this name or slug already exists",
+        {
+          status: 409,
+        }
+      );
+    }
+
+    // aktualizujemy usługę za pomocą id kategorii z params
+
     const category = await prisma.category.update({
       where: { id: id },
-      data: { name, slug },
+      data: { name, slug: generatedSlug },
     });
 
     return NextResponse.json(category, { status: 200 });
@@ -39,6 +71,17 @@ export async function DELETE(
 
     if (!id) {
       return NextResponse.json("Category ID is required", { status: 400 });
+    }
+
+    const servicesUsingCategory = await prisma.service.findFirst({
+      where: { categoryId: id },
+    });
+
+    if (servicesUsingCategory) {
+      return NextResponse.json(
+        "Cannot delete category because it is used in services",
+        { status: 409 }
+      );
     }
 
     const category = await prisma.category.delete({

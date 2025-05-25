@@ -2,33 +2,34 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { authClient } from "@/auth-client";
 import { cookies } from "next/headers";
+import { removePolishChars } from "@/lib/utils";
 
-function removePolishChars(elem: string): string {
-  const regExp: RegExp = /ą|ć|ę|ł|ń|ó|ś|ź|ż/gi;
-  return elem.replace(regExp, function (match: string): string {
-    switch (match.toLowerCase()) {
-      case "ą":
-        return "a";
-      case "ć":
-        return "c";
-      case "ę":
-        return "e";
-      case "ł":
-        return "l";
-      case "ń":
-        return "n";
-      case "ó":
-        return "o";
-      case "ś":
-        return "s";
-      case "ź":
-      case "ż":
-        return "z";
-      default:
-        return match;
-    }
-  });
-}
+// function removePolishChars(elem: string): string {
+//   const regExp: RegExp = /ą|ć|ę|ł|ń|ó|ś|ź|ż/gi;
+//   return elem.replace(regExp, function (match: string): string {
+//     switch (match.toLowerCase()) {
+//       case "ą":
+//         return "a";
+//       case "ć":
+//         return "c";
+//       case "ę":
+//         return "e";
+//       case "ł":
+//         return "l";
+//       case "ń":
+//         return "n";
+//       case "ó":
+//         return "o";
+//       case "ś":
+//         return "s";
+//       case "ź":
+//       case "ż":
+//         return "z";
+//       default:
+//         return match;
+//     }
+//   });
+// }
 
 export async function POST(request: Request) {
   const cookieStore = await cookies();
@@ -61,6 +62,16 @@ export async function POST(request: Request) {
       .trim()
       .toLowerCase()
       .replace(/\s+/g, "-");
+
+    const existingCategory = await prisma.category.findUnique({
+      where: { name },
+    });
+
+    if (existingCategory) {
+      return new NextResponse("Category with this name already exists", {
+        status: 409,
+      });
+    }
 
     const category = await prisma.category.create({
       data: {
@@ -112,7 +123,7 @@ export async function PATCH(
     const userId = session.data?.user.id;
 
     const body = await request.json();
-    const { name, slug } = body;
+    const { name } = body;
 
     if (!userId) {
       return new NextResponse("Unauthenticated", { status: 401 });
@@ -121,9 +132,36 @@ export async function PATCH(
     if (!name) {
       return new NextResponse("Name is required", { status: 400 });
     }
-    // if (!slug) {
-    //   return new NextResponse("Slug is required", { status: 400 });
-    // }
+
+    const generatedSlug = removePolishChars(name)
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "-");
+
+    // Sprawdzamy, czy kategoria o danej nazwie już istnieje
+    const existingCategory = await prisma.category.findFirst({
+      where: {
+        AND: [
+          {
+            OR: [{ name: name }, { slug: generatedSlug }],
+          },
+          {
+            NOT: {
+              id: params.id,
+            },
+          },
+        ],
+      },
+    });
+
+    if (existingCategory) {
+      return new NextResponse(
+        "Category with this name or slug already exists",
+        {
+          status: 409,
+        }
+      );
+    }
 
     // aktualizujemy usługę za pomocą id kategorii z params
     const category = await prisma.category.update({
@@ -132,7 +170,7 @@ export async function PATCH(
       },
       data: {
         name,
-        slug,
+        slug: generatedSlug,
       },
     });
     return NextResponse.json(category);

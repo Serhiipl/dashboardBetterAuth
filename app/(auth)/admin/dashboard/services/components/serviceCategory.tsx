@@ -41,13 +41,28 @@ const ServiceCategoryForm = () => {
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Error response:", errorText);
+
+        if (response.status === 409) {
+          toast.error("Taka kategoria już istnieje!", {
+            duration: 3000,
+            position: "top-center",
+            icon: "⚠️",
+            style: {
+              border: "1px solid #713200",
+              padding: "16px",
+              color: "#713200",
+              backgroundColor: "#f8d7da",
+            },
+          });
+          return;
+        }
+
         throw new Error(
           `Nie udało się dodać kategorii: ${response.statusText}`
         );
       }
       const newCategory = await response.json();
       addServiceCategory(newCategory);
-      form.reset();
 
       toast.success("Kategoria została dodana pomyślnie!", {
         duration: 3000,
@@ -63,7 +78,7 @@ const ServiceCategoryForm = () => {
       });
     }
 
-    form.reset(); // Очищаємо форму
+    form.reset();
   };
 
   return (

@@ -4,9 +4,6 @@ import { authClient } from "@/auth-client";
 import { cookies } from "next/headers";
 
 export async function POST(request: Request) {
-  // const { data: session } = authClient.useSession();
-
-  // const cookieHeader = cookies().toString();
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
 
@@ -22,7 +19,7 @@ export async function POST(request: Request) {
     const userId = session.data?.user.id;
 
     const body = await request.json();
-    const { name, description, price, duration, active } = body;
+    const { name, description, price, duration, active, categoryId } = body;
 
     if (!userId) {
       return new NextResponse("Unauthenticated", { status: 401 });
@@ -49,6 +46,11 @@ export async function POST(request: Request) {
         price,
         duration,
         active,
+        category: {
+          connect: {
+            id: categoryId,
+          },
+        },
       },
     });
 
@@ -64,6 +66,9 @@ export async function POST(request: Request) {
 export async function GET() {
   try {
     const services = await prisma.service.findMany({
+      include: {
+        category: true,
+      },
       orderBy: {
         createdAt: "desc",
       },
@@ -86,8 +91,6 @@ export async function PATCH(
     const userId = authClient.useSession();
     const body = await request.json();
     const { name, description, price, duration, active } = body;
-
-    // na przyszłość kiedy dodam autoryzacje
 
     if (!userId) {
       return new NextResponse("Unauthenticated", { status: 401 });
