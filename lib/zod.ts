@@ -1,4 +1,4 @@
-import { boolean, coerce, object, string } from "zod";
+import { boolean, object, string } from "zod";
 
 const getPasswordSchema = (type: "password" | "confirmPassword") =>
   string({ required_error: `${type} is required` })
@@ -45,11 +45,17 @@ export const resetPasswordSchema = object({
 export const serviceFormSchema = object({
   name: string().min(1, "Nazwa jest wymagana"),
   description: string().min(1, "Opis jest wymagany"),
-  price: coerce.number().positive("Cena musi być większa niż 0"),
-  duration: coerce
-    .number()
-    .int("Czas musi być liczbą całkowitą")
-    .min(5, "Czas realizacji musi być co najmniej 5 minut"),
+  price: string()
+    .min(1, "Cena jest wymagana")
+    .transform((val) => parseFloat(val))
+    .refine((val) => !isNaN(val) && val > 0, "Cena musi być większa niż 0"),
+  duration: string()
+    .min(1, "Czas jest wymagany")
+    .transform((val) => parseInt(val))
+    .refine(
+      (val) => !isNaN(val) && val >= 5,
+      "Czas realizacji musi być co najmniej 5 minut"
+    ),
   active: boolean().default(true),
   categoryId: string().min(1, "Kategoria jest wymagana"), // 🔥 Додано
 });

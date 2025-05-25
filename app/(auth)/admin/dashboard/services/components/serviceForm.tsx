@@ -126,13 +126,18 @@ const ServiceForm = () => {
                 <FormItem className="w-full md:w-1/4">
                   <FormLabel>Cena (zł)</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="Cena" {...field} />
+                    <Input
+                      type="text"
+                      placeholder="podaj cenę"
+                      {...field}
+                      value={field.value || ""} // показувати пустий string замість 0
+                      onChange={(e) => field.onChange(e.target.value)}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
             <FormField
               name="duration"
               control={form.control}
@@ -141,9 +146,11 @@ const ServiceForm = () => {
                   <FormLabel>Czas (min)</FormLabel>
                   <FormControl>
                     <Input
-                      type="number"
-                      placeholder="Czas realizacji"
+                      type="text"
+                      placeholder="czas realizacji"
                       {...field}
+                      value={field.value || ""} // показувати пустий string замість 0
+                      onChange={(e) => field.onChange(e.target.value)}
                     />
                   </FormControl>
                   <FormMessage />
