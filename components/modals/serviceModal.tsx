@@ -74,7 +74,7 @@ export const ServiceChangeModal: React.FC<ServiceChangeModalProps> = ({
           </label>
           <input
             className="w-full rounded-sm px-2 py-1 shadow-md shadow-red-100 border border-red-100 focus:outline-none focus:border-red-400"
-            type="number"
+            type="text"
             name="price"
             value={formData.price}
             onChange={handleChange}
@@ -88,7 +88,7 @@ export const ServiceChangeModal: React.FC<ServiceChangeModalProps> = ({
           </label>
           <input
             className="w-full rounded-sm px-2 py-1 shadow-md shadow-red-100 border border-red-100 focus:outline-none focus:border-red-400"
-            type="number"
+            type="text"
             name="duration"
             value={formData.duration}
             onChange={handleChange}
