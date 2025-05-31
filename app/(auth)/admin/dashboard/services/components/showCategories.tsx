@@ -27,13 +27,13 @@ export const ShowCategories: React.FC = () => {
           {serviceCategories.map((category) => (
             <li
               key={category.id}
-              className="p-4 bg-white rounded-lg w-full sm:max-w-xs shadow-md relative"
+              className="p-3 bg-white rounded-lg w-full sm:max-w-xs shadow-md relative"
             >
               <CellActionCategory
                 className="absolute right-1 top-0"
                 data={category}
               />
-              <h3 className="sm:text-lg text-base text-gray-900 px-2 truncate">
+              <h3 className="sm:text-base text-sm text-gray-900 pr-5 pl-2 truncate">
                 {category.name}
               </h3>
             </li>
