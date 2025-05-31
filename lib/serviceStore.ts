@@ -26,6 +26,10 @@ interface ServiceStore {
   deleteServiceCategory: (categoryId: string) => void;
   updateServiceCategory: (updatedCategory: ServiceCategory) => void;
   reset: () => void;
+  isLoading: boolean; // ← Додаємо isLoading
+  error: string | null; // ← Додаємо error для кращої обробки помилок
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
 }
 
 const fetchServices = async (
@@ -62,6 +66,11 @@ const useServiceStore = create<ServiceStore>((set) => ({
   serviceCategories: [],
   fetchServices: () => fetchServices(set),
   fetchServiceCategories: () => fetchServiceCategories(set),
+  isLoading: false,
+  error: null,
+
+  setLoading: (loading: boolean) => set({ isLoading: loading }),
+  setError: (error: string | null) => set({ error }),
 
   addService: async (newService) => {
     set((state) => ({
