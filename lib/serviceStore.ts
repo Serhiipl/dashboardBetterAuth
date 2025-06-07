@@ -7,11 +7,12 @@ export interface ServiceProps {
   price: number;
   duration: number;
   active: boolean;
-  categoryId: string; // ← додай це!
+  categoryId: string;
 }
+
 export interface ServiceCategory {
   id: string;
-  name: string; // якщо в базі даних називається categoryName було name
+  name: string;
 }
 
 interface ServiceStore {
@@ -22,12 +23,12 @@ interface ServiceStore {
   addService: (newService: ServiceProps) => Promise<void>;
   deleteService: (serviceId: string) => Promise<void>;
   updateService: (updatedService: ServiceProps) => Promise<void>;
-  addServiceCategory: (newCategory: ServiceCategory) => void;
-  deleteServiceCategory: (categoryId: string) => void;
-  updateServiceCategory: (updatedCategory: ServiceCategory) => void;
+  addServiceCategory: (newCategory: ServiceCategory) => Promise<void>;
+  deleteServiceCategory: (categoryId: string) => Promise<void>;
+  updateServiceCategory: (updatedCategory: ServiceCategory) => Promise<void>;
   reset: () => void;
-  isLoading: boolean; // ← Додаємо isLoading
-  error: string | null; // ← Додаємо error для кращої обробки помилок
+  isLoading: boolean;
+  error: string | null;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
 }
@@ -36,53 +37,86 @@ const fetchServices = async (
   set: (partial: (state: ServiceStore) => Partial<ServiceStore>) => void
 ) => {
   try {
+    set((state) => ({ ...state, isLoading: true, error: null }));
     const response = await fetch("/api/services");
     if (!response.ok) {
       throw new Error("Failed to fetch services");
     }
     const data = await response.json();
-    set((state) => ({ ...state, services: data }));
+    set((state) => ({
+      ...state,
+      services: Array.isArray(data) ? data : [],
+      isLoading: false,
+    }));
   } catch (error) {
     console.error("Error fetching services:", error);
+    set((state) => ({
+      ...state,
+      services: [],
+      error: "Не вдалося завантажити послуги",
+      isLoading: false,
+    }));
   }
 };
+
 const fetchServiceCategories = async (
   set: (partial: (state: ServiceStore) => Partial<ServiceStore>) => void
 ) => {
   try {
+    set((state) => ({ ...state, isLoading: true, error: null }));
     const response = await fetch("/api/categories");
     if (!response.ok) {
       throw new Error("Failed to fetch service categories");
     }
     const data = await response.json();
-    set((state) => ({ ...state, serviceCategories: data }));
+    set((state) => ({
+      ...state,
+      serviceCategories: Array.isArray(data) ? data : [],
+      isLoading: false,
+    }));
   } catch (error) {
     console.error("Error fetching service categories:", error);
+    set((state) => ({
+      ...state,
+      serviceCategories: [],
+      error: "Не вдалося завантажити категорії",
+      isLoading: false,
+    }));
   }
 };
 
 const useServiceStore = create<ServiceStore>((set) => ({
   services: [],
   serviceCategories: [],
-  fetchServices: () => fetchServices(set),
-  fetchServiceCategories: () => fetchServiceCategories(set),
   isLoading: false,
   error: null,
 
   setLoading: (loading: boolean) => set({ isLoading: loading }),
   setError: (error: string | null) => set({ error }),
 
-  addService: async (newService) => {
-    set((state) => ({
-      ...state,
-      services: [...state.services, newService],
-    }));
+  fetchServices: () => fetchServices(set),
+  fetchServiceCategories: () => fetchServiceCategories(set),
 
-    // Вызовем fetchServices для обновления списка
-    await fetchServices(set);
+  addService: async (newService) => {
+    try {
+      const response = await fetch("/api/services", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newService),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add service");
+      }
+
+      // Оновлюємо список послуг
+      await fetchServices(set);
+    } catch (error) {
+      console.error("Error adding service:", error);
+      throw error;
+    }
   },
 
-  // У serviceStore.ts
   deleteService: async (serviceId) => {
     try {
       if (!serviceId) {
@@ -105,7 +139,7 @@ const useServiceStore = create<ServiceStore>((set) => ({
       }));
     } catch (error) {
       console.error("Error deleting service:", error);
-      throw error; // Перекидаємо помилку для обробки у компоненті
+      throw error;
     }
   },
 
@@ -125,7 +159,6 @@ const useServiceStore = create<ServiceStore>((set) => ({
         throw new Error(`Failed to update service: ${errorText}`);
       }
 
-      // Оновлення успішне, оновлюємо стан
       set((state) => ({
         services: state.services.map((service) =>
           service.serviceId === updatedService.serviceId
@@ -135,35 +168,50 @@ const useServiceStore = create<ServiceStore>((set) => ({
       }));
     } catch (error) {
       console.error("Error updating service:", error);
-      throw error; // Перекидаємо помилку, щоб її можна було обробити в компоненті
+      throw error;
     }
   },
 
   addServiceCategory: async (newCategory) => {
-    set((state) => ({
-      serviceCategories: [...state.serviceCategories, newCategory],
-    }));
-    await fetchServiceCategories(set);
-  },
-  deleteServiceCategory: async (id) => {
     try {
-      const response = await fetch(`/api/categories/${id}`, {
+      const response = await fetch("/api/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newCategory),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add category");
+      }
+
+      await fetchServiceCategories(set);
+    } catch (error) {
+      console.error("Error adding service category:", error);
+      throw error;
+    }
+  },
+
+  deleteServiceCategory: async (categoryId) => {
+    try {
+      const response = await fetch(`/api/categories/${categoryId}`, {
         method: "DELETE",
       });
+
       if (!response.ok) {
         throw new Error("Failed to delete category");
       }
-      // Удаление категории с API
+
       set((state) => ({
         serviceCategories: state.serviceCategories.filter(
-          (category) => category.id !== category.id
+          (category) => category.id !== categoryId // ВИПРАВЛЕНО: було category.id !== category.id
         ),
       }));
-      fetchServiceCategories(set);
     } catch (error) {
       console.error("Error deleting service category:", error);
+      throw error;
     }
   },
+
   updateServiceCategory: async (updatedCategory) => {
     try {
       const response = await fetch(`/api/categories/${updatedCategory.id}`, {
@@ -171,9 +219,11 @@ const useServiceStore = create<ServiceStore>((set) => ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedCategory),
       });
+
       if (!response.ok) {
         throw new Error("Failed to update category");
       }
+
       set((state) => ({
         serviceCategories: state.serviceCategories.map((category) =>
           category.id === updatedCategory.id ? updatedCategory : category
@@ -181,9 +231,17 @@ const useServiceStore = create<ServiceStore>((set) => ({
       }));
     } catch (error) {
       console.error("Error updating service category:", error);
+      throw error;
     }
   },
-  reset: () => set({ services: [], serviceCategories: [] }),
+
+  reset: () =>
+    set({
+      services: [],
+      serviceCategories: [],
+      isLoading: false,
+      error: null,
+    }),
 }));
 
 export default useServiceStore;

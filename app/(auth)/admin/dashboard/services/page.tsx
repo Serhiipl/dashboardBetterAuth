@@ -1,28 +1,3 @@
-// import React from "react";
-// import AddService from "./components/addService";
-
-// // import { redirect } from "next/navigation";
-// import ShowServices from "./components/showServices";
-
-// const AddServicePage = async () => {
-//   //   if (!session?.user) {
-//   //     redirect("/sign-in");
-//   //   }
-
-//   return (
-//     <div className="flex flex-col gap-4 p-4">
-//       <h1 className="text-2xl font-bold">Dodawanie usług</h1>
-//       <p className="text-muted-foreground">
-//         Tutaj możesz dodać nową usługę do swojego pulpitu.
-//       </p>
-//       <AddService />
-
-//       <ShowServices />
-//     </div>
-//   );
-// };
-
-// export default AddServicePage;
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -43,8 +18,8 @@ const LoadingState = () => (
 const AddServicePage = () => {
   // Отримуємо дані зі store
   const {
-    services,
-    serviceCategories,
+    services = [],
+    serviceCategories = [],
     fetchServices,
     fetchServiceCategories,
     isLoading,
@@ -56,7 +31,11 @@ const AddServicePage = () => {
   // Завантажуємо дані при монтуванні компонента
   useEffect(() => {
     const loadData = async () => {
-      await Promise.all([fetchServices(), fetchServiceCategories()]);
+      try {
+        await Promise.all([fetchServices(), fetchServiceCategories()]);
+      } catch (error) {
+        console.error("Помилка завантаження даних:", error);
+      }
     };
 
     loadData();
@@ -64,21 +43,21 @@ const AddServicePage = () => {
 
   // Оновлюємо фільтровані послуги коли змінюються основні послуги
   useEffect(() => {
-    setFilteredServices(services);
+    setFilteredServices(Array.isArray(services) ? services : []);
   }, [services]);
 
   // Обробник зміни фільтрованих послуг
   const handleFilteredServicesChange = (filtered: ServiceProps[]) => {
-    setFilteredServices(filtered);
-  };
-  const handleFilteredDescriptionServicesChange = (
-    filtered: ServiceProps[]
-  ) => {
-    setFilteredServices(filtered);
+    console.log("Фільтровані послуги:", filtered); // Для дебагу
+    setFilteredServices(Array.isArray(filtered) ? filtered : []);
   };
 
+  console.log("Services:", services);
+  console.log("Service Categories:", serviceCategories);
+  console.log("Filtered Services:", filteredServices);
+
   // Показуємо завантаження поки дані не загрузились
-  if (isLoading && services.length === 0) {
+  if (isLoading && (!services || services.length === 0)) {
     return (
       <div className="flex flex-col gap-4 p-4">
         <h1 className="text-2xl font-bold">Dodawanie usług</h1>
@@ -106,21 +85,26 @@ const AddServicePage = () => {
       </div>
 
       {/* Фільтр категорій - показуємо тільки якщо є категорії */}
-      {serviceCategories.length > 0 && (
+      {serviceCategories && serviceCategories.length > 0 && (
         <CategoryFilter
           categories={serviceCategories}
-          services={services}
+          services={services || []}
           onFilteredServicesChange={handleFilteredServicesChange}
-          onFilteredServicesByName={handleFilteredServicesChange}
-          onFilteredServicesByDescription={
-            handleFilteredDescriptionServicesChange
-          }
           className="mb-6"
         />
       )}
 
-      {/* Список послуг */}
+      {/* Список послуг - передаємо відфільтровані послуги */}
       <ShowServices services={filteredServices} />
+
+      {/* Дебаг інформація (тільки в режимі розробки) */}
+      {process.env.NODE_ENV === "development" && (
+        <div className="mt-4 p-4 bg-gray-100 rounded text-sm">
+          <p>Debug: Всього послуг: {services?.length || 0}</p>
+          <p>Debug: Показано послуг: {filteredServices?.length || 0}</p>
+          <p>Debug: Категорій: {serviceCategories?.length || 0}</p>
+        </div>
+      )}
     </div>
   );
 };

@@ -38,7 +38,7 @@ const ServiceCard: React.FC<{
         <h3 className="text-lg font-semibold text-gray-900 truncate pr-8">
           {service.name}
         </h3>
-        <p className=" bg-indigo-200 text-indigo-800 text-sm max-w-fit px-4 rounded-full mt-1">
+        <p className="bg-cyan-50 text-indigo-800 text-sm max-w-fit px-4 rounded-full mt-1">
           {categoryName || (
             <span className="italic text-gray-400">Brak kategorii</span>
           )}
@@ -115,19 +115,29 @@ const LoadingState: React.FC = () => (
     ))}
   </div>
 );
+
 interface ShowServicesProps {
   services: ServiceProps[];
 }
 
-const ShowServices: React.FC<ShowServicesProps> = ({ services }) => {
-  const { serviceCategories, fetchServiceCategories, fetchServices } =
-    useServiceStore();
+const ShowServices: React.FC<ShowServicesProps> = ({
+  services: filteredServices,
+}) => {
+  const {
+    serviceCategories,
+    fetchServiceCategories,
+    fetchServices,
+    isLoading,
+    error,
+  } = useServiceStore();
+
   const [isMounted, setIsMounted] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   // Мемоізована мапа категорій для швидкого пошуку
   const categoryMap = useMemo(() => {
+    if (!serviceCategories || !Array.isArray(serviceCategories)) {
+      return {};
+    }
     return serviceCategories.reduce(
       (acc: Record<string, string>, category: ServiceCategory) => {
         acc[category.id] = category.name;
@@ -140,36 +150,36 @@ const ShowServices: React.FC<ShowServicesProps> = ({ services }) => {
   // Функція для завантаження даних
   const loadData = useCallback(async () => {
     try {
-      setIsLoading(true);
-      setError(null);
       await Promise.all([fetchServiceCategories(), fetchServices()]);
     } catch (err) {
-      setError("Не вдалося завантажити дані. Спробуйте ще раз.");
       console.error("Error loading data:", err);
-    } finally {
-      setIsLoading(false);
     }
   }, [fetchServiceCategories, fetchServices]);
 
   useEffect(() => {
-    loadData();
+    if (!serviceCategories || serviceCategories.length === 0) {
+      loadData();
+    }
     setIsMounted(true);
-  }, [loadData]);
+  }, [loadData, serviceCategories]);
 
   // Показуємо null до монтування (для SSR)
   if (!isMounted) {
     return null;
   }
 
+  // Використовуємо передані послуги замість тих, що зі store
+  const servicesToDisplay = filteredServices || [];
+
   return (
     <div className="bg-slate-50 p-6 rounded-xl">
       {/* Заголовок */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Послуги</h2>
+          <h2 className="text-2xl font-bold text-gray-800">Usługi</h2>
           <p className="text-gray-600 mt-1">
-            Znaleziono {services.length}{" "}
-            {services.length === 1 ? "usługa" : "usług"}
+            Znaleziono {servicesToDisplay.length}{" "}
+            {servicesToDisplay.length === 1 ? "usługa" : "usług"}
           </p>
         </div>
 
@@ -219,9 +229,9 @@ const ShowServices: React.FC<ShowServicesProps> = ({ services }) => {
       {/* Контент */}
       {isLoading ? (
         <LoadingState />
-      ) : services.length > 0 ? (
+      ) : servicesToDisplay.length > 0 ? (
         <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {services.map((service: ServiceProps) => (
+          {servicesToDisplay.map((service: ServiceProps) => (
             <ServiceCard
               key={service.serviceId}
               service={service}
