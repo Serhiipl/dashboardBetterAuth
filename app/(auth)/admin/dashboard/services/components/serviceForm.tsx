@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -25,25 +25,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { Category } from "@prisma/client";
-
 type ServiceFormValues = z.infer<typeof serviceFormSchema>;
 
 const ServiceForm = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
+  const { fetchServiceCategories, serviceCategories } = useServiceStore();
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch("/api/categories");
-        const data = await res.json();
-        setCategories(data);
-      } catch (err) {
-        console.error("Błąd przy pobieraniu kategorii", err);
-      }
-    };
-    fetchCategories();
-  }, []);
+    fetchServiceCategories();
+  }, [fetchServiceCategories]);
 
   const form = useForm<ServiceFormValues>({
     resolver: zodResolver(serviceFormSchema),
@@ -158,52 +147,53 @@ const ServiceForm = () => {
               )}
             />
           </div>
-
-          <FormField
-            name="active"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem className="flex items-center gap-2">
-                <FormControl>
-                  <Input
-                    type="checkbox"
-                    checked={field.value}
-                    onChange={(e) => field.onChange(e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                </FormControl>
-                <FormLabel className="!m-0">Aktywna</FormLabel>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="categoryId"
-            render={({ field }) => (
-              <FormItem className="w-full  md:w-1/2">
-                <FormLabel>Kategoria</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value || ""}
-                >
+          <div className="flex flex-col sm:flex-row gap-2">
+            <FormField
+              name="active"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem className="flex items-center gap-2">
                   <FormControl>
-                    <SelectTrigger className="bg-white">
-                      <SelectValue placeholder="Wybierz kategorię" />
-                    </SelectTrigger>
+                    <Input
+                      type="checkbox"
+                      checked={field.value}
+                      onChange={(e) => field.onChange(e.target.checked)}
+                      className="w-4 h-4"
+                    />
                   </FormControl>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  <FormLabel className="!m-0">Aktywna</FormLabel>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="categoryId"
+              render={({ field }) => (
+                <FormItem className="w-full  md:w-1/2">
+                  {/* <FormLabel>Kategoria</FormLabel> */}
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value || ""}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="bg-white">
+                        <SelectValue placeholder="Wybierz kategorię" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {serviceCategories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
           <FormField
             name="description"

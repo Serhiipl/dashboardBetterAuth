@@ -52,10 +52,6 @@ const AddServicePage = () => {
     setFilteredServices(Array.isArray(filtered) ? filtered : []);
   };
 
-  console.log("Services:", services);
-  console.log("Service Categories:", serviceCategories);
-  console.log("Filtered Services:", filteredServices);
-
   // Показуємо завантаження поки дані не загрузились
   if (isLoading && (!services || services.length === 0)) {
     return (

@@ -4,33 +4,6 @@ import { authClient } from "@/auth-client";
 import { cookies } from "next/headers";
 import { removePolishChars } from "@/lib/utils";
 
-// function removePolishChars(elem: string): string {
-//   const regExp: RegExp = /ą|ć|ę|ł|ń|ó|ś|ź|ż/gi;
-//   return elem.replace(regExp, function (match: string): string {
-//     switch (match.toLowerCase()) {
-//       case "ą":
-//         return "a";
-//       case "ć":
-//         return "c";
-//       case "ę":
-//         return "e";
-//       case "ł":
-//         return "l";
-//       case "ń":
-//         return "n";
-//       case "ó":
-//         return "o";
-//       case "ś":
-//         return "s";
-//       case "ź":
-//       case "ż":
-//         return "z";
-//       default:
-//         return match;
-//     }
-//   });
-// }
-
 export async function POST(request: Request) {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
@@ -46,12 +19,12 @@ export async function POST(request: Request) {
   try {
     const userId = session.data?.user.id;
 
-    const body = await request.json();
-    const { name, slug } = body;
-
     if (!userId) {
       return new NextResponse("Unauthenticated", { status: 401 });
     }
+
+    const body = await request.json();
+    const { name, slug } = body;
 
     if (!name) {
       return new NextResponse("Name is required", { status: 400 });
@@ -63,20 +36,65 @@ export async function POST(request: Request) {
       .toLowerCase()
       .replace(/\s+/g, "-");
 
-    const existingCategory = await prisma.category.findUnique({
-      where: { name },
+    // const existingCategory = await prisma.category.findFirst({
+    //   where: {
+    //     OR: [{ slug: slug || generatedSlug }, { name: name }], // Sprawdzamy zarówno slug jak i name
+    //   },
+    // });
+
+    // console.log("Existing category found:", existingCategory);
+
+    // if (existingCategory) {
+    //   return new NextResponse("Category with this name already exists", {
+    //     status: 409,
+    //   });
+    // }
+    // if (existingCategory) {
+    //   return new NextResponse(
+    //     `Category already exists with name "${existingCategory.name}" or slug "${existingCategory.slug}"`,
+    //     {
+    //       status: 409,
+    //     }
+    //   );
+    // }
+
+    // const category = await prisma.category.create({
+    //   data: {
+    //     name,
+    //     slug: slug || generatedSlug,
+    //   },
+    // });
+
+    const finalSlug = slug || generatedSlug;
+
+    // Покращена перевірка на існування
+    const existingByName = await prisma.category.findFirst({
+      where: { name: { equals: name, mode: "insensitive" } },
     });
 
-    if (existingCategory) {
-      return new NextResponse("Category with this name already exists", {
-        status: 409,
-      });
+    const existingBySlug = await prisma.category.findFirst({
+      where: { slug: finalSlug },
+    });
+
+    if (existingByName) {
+      return new NextResponse(
+        `Category with name "${existingByName.name}" already exists`,
+        { status: 409 }
+      );
     }
 
+    if (existingBySlug) {
+      return new NextResponse(
+        `Category with slug "${existingBySlug.slug}" already exists`,
+        { status: 409 }
+      );
+    }
+
+    // Створення категорії
     const category = await prisma.category.create({
       data: {
-        name,
-        slug: slug || generatedSlug,
+        name: name.trim(),
+        slug: finalSlug,
       },
     });
 
@@ -106,94 +124,94 @@ export async function GET() {
   }
 }
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
-  const cookieHeader = cookies().toString();
+// export async function PATCH(
+//   request: Request,
+//   { params }: { params: { id: string } }
+// ) {
+//   const cookieHeader = cookies().toString();
 
-  const session = await authClient.getSession({
-    fetchOptions: {
-      headers: {
-        cookie: cookieHeader,
-      },
-    },
-  });
-  try {
-    const userId = session.data?.user.id;
+//   const session = await authClient.getSession({
+//     fetchOptions: {
+//       headers: {
+//         cookie: cookieHeader,
+//       },
+//     },
+//   });
+//   try {
+//     const userId = session.data?.user.id;
 
-    const body = await request.json();
-    const { name } = body;
+//     const body = await request.json();
+//     const { name } = body;
 
-    if (!userId) {
-      return new NextResponse("Unauthenticated", { status: 401 });
-    }
+//     if (!userId) {
+//       return new NextResponse("Unauthenticated", { status: 401 });
+//     }
 
-    if (!name) {
-      return new NextResponse("Name is required", { status: 400 });
-    }
+//     if (!name) {
+//       return new NextResponse("Name is required", { status: 400 });
+//     }
 
-    const generatedSlug = removePolishChars(name)
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, "-");
+//     const generatedSlug = removePolishChars(name)
+//       .trim()
+//       .toLowerCase()
+//       .replace(/\s+/g, "-");
 
-    // Sprawdzamy, czy kategoria o danej nazwie już istnieje
-    const existingCategory = await prisma.category.findFirst({
-      where: {
-        AND: [
-          {
-            OR: [{ name: name }, { slug: generatedSlug }],
-          },
-          {
-            NOT: {
-              id: params.id,
-            },
-          },
-        ],
-      },
-    });
+//     // Sprawdzamy, czy kategoria o danej nazwie już istnieje
+//     const existingCategory = await prisma.category.findFirst({
+//       where: {
+//         AND: [
+//           {
+//             OR: [{ name: name }, { slug: generatedSlug }],
+//           },
+//           {
+//             NOT: {
+//               id: params.id,
+//             },
+//           },
+//         ],
+//       },
+//     });
 
-    if (existingCategory) {
-      return new NextResponse(
-        "Category with this name or slug already exists",
-        {
-          status: 409,
-        }
-      );
-    }
+//     if (existingCategory) {
+//       return new NextResponse(
+//         "Category with this name or slug already exists",
+//         {
+//           status: 409,
+//         }
+//       );
+//     }
 
-    // aktualizujemy usługę za pomocą id kategorii z params
-    const category = await prisma.category.update({
-      where: {
-        id: params.id,
-      },
-      data: {
-        name,
-        slug: generatedSlug,
-      },
-    });
-    return NextResponse.json(category);
-  } catch (error) {
-    console.log("Błąd przy zmianie kategorii", error);
-    return new NextResponse("Internal error", { status: 500 });
-  }
-}
+//     // aktualizujemy usługę za pomocą id kategorii z params
+//     const category = await prisma.category.update({
+//       where: {
+//         id: params.id,
+//       },
+//       data: {
+//         name,
+//         slug: generatedSlug,
+//       },
+//     });
+//     return NextResponse.json(category);
+//   } catch (error) {
+//     console.log("Błąd przy zmianie kategorii", error);
+//     return new NextResponse("Internal error", { status: 500 });
+//   }
+// }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
-  try {
-    if (!params.id) {
-      return new NextResponse("Category id is required", { status: 400 });
-    }
-    const category = await prisma.category.delete({
-      where: { id: params.id },
-    });
-    return NextResponse.json(category);
-  } catch (error) {
-    console.log("[Błąd przy usunięciu usługi", error);
-    return new NextResponse("Internal error", { status: 500 });
-  }
-}
+// export async function DELETE(
+//   request: Request,
+//   { params }: { params: { id: string } }
+// ) {
+//   try {
+//     if (!params.id) {
+//       return new NextResponse("Category id is required", { status: 400 });
+//     }
+//     const category = await prisma.category.delete({
+//       where: { id: params.id },
+//     });
+//     return NextResponse.json(category);
+//   } catch (error) {
+//     console.log("[Błąd przy usunięciu usługi", error);
+//     return new NextResponse("Internal error", { status: 500 });
+//   }
+// }

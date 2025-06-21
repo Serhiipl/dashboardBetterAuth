@@ -181,7 +181,8 @@ const useServiceStore = create<ServiceStore>((set) => ({
       });
 
       if (!response.ok) {
-        throw new Error("Failed to add category");
+        const errorText = await response.text();
+        throw new Error(`Failed to add category: ${errorText}`);
       }
 
       await fetchServiceCategories(set);
@@ -203,7 +204,7 @@ const useServiceStore = create<ServiceStore>((set) => ({
 
       set((state) => ({
         serviceCategories: state.serviceCategories.filter(
-          (category) => category.id !== categoryId // ВИПРАВЛЕНО: було category.id !== category.id
+          (category) => category.id !== categoryId
         ),
       }));
     } catch (error) {
