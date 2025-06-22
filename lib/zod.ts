@@ -1,4 +1,4 @@
-import { boolean, object, string } from "zod";
+import { boolean, object, string, z } from "zod";
 
 const getPasswordSchema = (type: "password" | "confirmPassword") =>
   string({ required_error: `${type} is required` })
@@ -56,6 +56,14 @@ export const serviceFormSchema = object({
       (val) => !isNaN(val) && val >= 5,
       "Czas realizacji musi być co najmniej 5 minut"
     ),
+  // images: object({ url: string() }).array(),
+  images: z
+    .array(
+      z.object({
+        url: z.string().url("Невірний URL зображення"),
+      })
+    )
+    .default([]),
   active: boolean().default(true),
   categoryId: string().min(1, "Kategoria jest wymagana"), // 🔥 Додано
 });

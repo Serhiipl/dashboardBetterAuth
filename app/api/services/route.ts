@@ -19,7 +19,8 @@ export async function POST(request: Request) {
     const userId = session.data?.user.id;
 
     const body = await request.json();
-    const { name, description, price, duration, active, categoryId } = body;
+    const { name, description, price, duration, active, images, categoryId } =
+      body;
 
     if (!userId) {
       return new NextResponse("Unauthenticated", { status: 401 });
@@ -38,6 +39,7 @@ export async function POST(request: Request) {
       return new NextResponse("Time is required", { status: 400 });
     }
     // Tworzenie nowego zapisu w bazie danych
+    console.log("Incoming images:", images);
 
     const service = await prisma.service.create({
       data: {
@@ -46,6 +48,17 @@ export async function POST(request: Request) {
         price,
         duration,
         active,
+        images:
+          Array.isArray(images) && images.length > 0
+            ? {
+                createMany: {
+                  data: images.map((image: { url: string }) => ({
+                    url: image.url,
+                  })),
+                },
+              }
+            : undefined,
+
         category: {
           connect: {
             id: categoryId,
@@ -53,6 +66,8 @@ export async function POST(request: Request) {
         },
       },
     });
+    console.log("🛠️ POST /api/services called. Images:", images);
+    console.log("🔁 FULL BODY", body);
 
     return NextResponse.json(service, { status: 201 });
   } catch (error) {
@@ -68,6 +83,7 @@ export async function GET() {
     const services = await prisma.service.findMany({
       include: {
         category: true,
+        images: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -83,65 +99,65 @@ export async function GET() {
   }
 }
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: { serviceId: string } }
-) {
-  try {
-    const userId = authClient.useSession();
-    const body = await request.json();
-    const { name, description, price, duration, active } = body;
+// export async function PATCH(
+//   request: Request,
+//   { params }: { params: { serviceId: string } }
+// ) {
+//   try {
+//     const userId = authClient.useSession();
+//     const body = await request.json();
+//     const { name, description, price, duration, active } = body;
 
-    if (!userId) {
-      return new NextResponse("Unauthenticated", { status: 401 });
-    }
+//     if (!userId) {
+//       return new NextResponse("Unauthenticated", { status: 401 });
+//     }
 
-    if (!name) {
-      return new NextResponse("Name is required", { status: 400 });
-    }
-    if (!description) {
-      return new NextResponse("Description is required", { status: 400 });
-    }
-    if (price == null) {
-      return new NextResponse("Price is required", { status: 400 });
-    }
-    if (!duration) {
-      return new NextResponse("Time is required", { status: 400 });
-    }
-    // aktualizujemy usługę za pomocą serviceId z params
-    const service = await prisma.service.update({
-      where: {
-        serviceId: params.serviceId,
-      },
-      data: {
-        name,
-        description,
-        price,
-        duration,
-        active,
-      },
-    });
-    return NextResponse.json(service);
-  } catch (error) {
-    console.log("[Błąd przy zmianie usługi", error);
-    return new NextResponse("Internal error", { status: 500 });
-  }
-}
+//     if (!name) {
+//       return new NextResponse("Name is required", { status: 400 });
+//     }
+//     if (!description) {
+//       return new NextResponse("Description is required", { status: 400 });
+//     }
+//     if (price == null) {
+//       return new NextResponse("Price is required", { status: 400 });
+//     }
+//     if (!duration) {
+//       return new NextResponse("Time is required", { status: 400 });
+//     }
+//     // aktualizujemy usługę za pomocą serviceId z params
+//     const service = await prisma.service.update({
+//       where: {
+//         serviceId: params.serviceId,
+//       },
+//       data: {
+//         name,
+//         description,
+//         price,
+//         duration,
+//         active,
+//       },
+//     });
+//     return NextResponse.json(service);
+//   } catch (error) {
+//     console.log("[Błąd przy zmianie usługi", error);
+//     return new NextResponse("Internal error", { status: 500 });
+//   }
+// }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { serviceId: string } }
-) {
-  try {
-    if (!params.serviceId) {
-      return new NextResponse("Service id is required", { status: 400 });
-    }
-    const service = await prisma.service.delete({
-      where: { serviceId: params.serviceId },
-    });
-    return NextResponse.json(service);
-  } catch (error) {
-    console.log("[Błąd przy usunięciu usługi", error);
-    return new NextResponse("Internal error", { status: 500 });
-  }
-}
+// export async function DELETE(
+//   request: Request,
+//   { params }: { params: { serviceId: string } }
+// ) {
+//   try {
+//     if (!params.serviceId) {
+//       return new NextResponse("Service id is required", { status: 400 });
+//     }
+//     const service = await prisma.service.delete({
+//       where: { serviceId: params.serviceId },
+//     });
+//     return NextResponse.json(service);
+//   } catch (error) {
+//     console.log("[Błąd przy usunięciu usługi", error);
+//     return new NextResponse("Internal error", { status: 500 });
+//   }
+// }

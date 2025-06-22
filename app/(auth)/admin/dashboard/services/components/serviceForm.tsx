@@ -24,11 +24,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import ImageUpload from "@/components/image-upload";
 
 type ServiceFormValues = z.infer<typeof serviceFormSchema>;
+// type ServiceFormValues = z.infer<typeof serviceFormSchema> & {};
 
 const ServiceForm = () => {
-  const { fetchServiceCategories, serviceCategories } = useServiceStore();
+  const { fetchServiceCategories, serviceCategories, isLoading, addService } =
+    useServiceStore();
 
   useEffect(() => {
     fetchServiceCategories();
@@ -43,27 +46,28 @@ const ServiceForm = () => {
       duration: 0,
       active: true,
       categoryId: "",
+      images: [],
     },
   });
 
-  const { addService } = useServiceStore();
-
   const onSubmit = async (data: ServiceFormValues) => {
     try {
-      const response = await fetch("/api/services", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+      // const response = await fetch("/api/services", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify(data),
+      // });
 
-      if (!response.ok) {
-        throw new Error("Nie udało się dodać usługi");
-      }
+      // if (!response.ok) {
+      //   throw new Error("Nie udało się dodać usługi");
+      // }
 
-      const newService = await response.json();
-      addService(newService);
+      // const newService = await response.json();
+      // addService(newService);
+      // Використовуємо тільки addService з store, який вже робить API запит
+      await addService(data);
       form.reset();
 
       toast.success("Dodano nową usługę! 🎉", {
@@ -93,6 +97,33 @@ const ServiceForm = () => {
           onSubmit={form.handleSubmit(onSubmit)}
           className="w-full border rounded-md p-4 flex flex-col gap-3 relative"
         >
+          <FormField
+            control={form.control}
+            name="images"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Images</FormLabel>
+                <FormControl>
+                  <ImageUpload
+                    value={field.value.map((image) => image.url)}
+                    disabled={isLoading}
+                    onChange={(url) =>
+                      field.onChange([...field.value, { url }])
+                    }
+                    // onChange={(url) =>
+                    //   field.onChange((field.value = [...field.value, { url }]))
+                    // }
+                    onRemove={(url) =>
+                      field.onChange(
+                        field.value.filter((img) => img.url !== url)
+                      )
+                    }
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <div className="flex flex-col bg-gray-100 sm:flex-row gap-2">
             <FormField
               name="name"
@@ -214,8 +245,12 @@ const ServiceForm = () => {
             )}
           />
 
-          <Button className="w-full sm:w-44 ml-auto" type="submit">
-            Dodaj Usługe!
+          <Button
+            className="w-full sm:w-44 ml-auto"
+            type="submit"
+            disabled={isLoading}
+          >
+            {isLoading ? "Dodawanie..." : "Dodaj Usługe!"}
           </Button>
         </form>
       </Form>

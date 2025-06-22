@@ -6,10 +6,27 @@ export interface ServiceProps {
   description: string;
   price: number;
   duration: number;
+  images: Image[];
   active: boolean;
   categoryId: string;
 }
 
+// Тип для створення нової послуги (без serviceId)
+export interface CreateServiceData {
+  name: string;
+  description: string;
+  price: number;
+  duration: number;
+  images: { url: string }[];
+  active: boolean;
+  categoryId: string;
+}
+export interface Image {
+  id: string;
+  serviceId: string;
+  url: string;
+  createdAt: string;
+}
 export interface ServiceCategory {
   id: string;
   name: string;
@@ -20,7 +37,8 @@ interface ServiceStore {
   serviceCategories: ServiceCategory[];
   fetchServices: () => Promise<void>;
   fetchServiceCategories: () => Promise<void>;
-  addService: (newService: ServiceProps) => Promise<void>;
+  // addService: (newService: ServiceProps) => Promise<void>;
+  addService: (newService: CreateServiceData) => Promise<void>;
   deleteService: (serviceId: string) => Promise<void>;
   updateService: (updatedService: ServiceProps) => Promise<void>;
   addServiceCategory: (newCategory: ServiceCategory) => Promise<void>;
@@ -97,8 +115,30 @@ const useServiceStore = create<ServiceStore>((set) => ({
   fetchServices: () => fetchServices(set),
   fetchServiceCategories: () => fetchServiceCategories(set),
 
+  // addService: async (newService) => {
+  //   try {
+  //     const response = await fetch("/api/services", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify(newService),
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error("Failed to add service");
+  //     }
+
+  //     // Оновлюємо список послуг
+  //     await fetchServices(set);
+  //   } catch (error) {
+  //     console.error("Error adding service:", error);
+  //     throw error;
+  //   }
+  // },
+
   addService: async (newService) => {
     try {
+      set((state) => ({ ...state, isLoading: true, error: null }));
+
       const response = await fetch("/api/services", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -109,10 +149,17 @@ const useServiceStore = create<ServiceStore>((set) => ({
         throw new Error("Failed to add service");
       }
 
-      // Оновлюємо список послуг
+      // Після успішного створення - оновлюємо список послуг
       await fetchServices(set);
+
+      set((state) => ({ ...state, isLoading: false }));
     } catch (error) {
       console.error("Error adding service:", error);
+      set((state) => ({
+        ...state,
+        isLoading: false,
+        error: "Не вдалося додати послугу",
+      }));
       throw error;
     }
   },
