@@ -44,7 +44,10 @@ const CellAction: React.FC<CellActionProps> = ({ className, data }) => {
   };
 
   return (
-    <div className={cn("text-gray-400", className)}>
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className={cn("text-gray-400", className)}
+    >
       <AlertModal
         isOpen={open}
         onClose={() => setOpen(false)}

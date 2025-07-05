@@ -9,12 +9,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { User } from "@prisma/client";
+// import { User } from "@prisma/client";
 import { useEffect, useState } from "react";
 import ImpersonateUser from "./impersonate-user";
 
+type AuthUser = {
+  id: string;
+  name?: string;
+  email: string;
+  role: string;
+  emailVerified: boolean;
+  premium?: boolean;
+  banned?: boolean;
+  createdAt: string | Date;
+};
+
 export default function UsersTable() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<AuthUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -27,7 +38,7 @@ export default function UsersTable() {
         });
 
         if (response?.data) {
-          setUsers(response.data.users as User[]);
+          setUsers(response.data.users as AuthUser[]);
         }
       } catch (error) {
         setError(

@@ -31,10 +31,28 @@ export interface ServiceCategory {
   id: string;
   name: string;
 }
+export interface Banner {
+  id: string;
+  title: string;
+  description?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  createdAt: string;
+  updatedAt: string;
+  images: BannerImage[];
+}
+export interface BannerImage {
+  id: string;
+  bannerId: string;
+  url: string;
+  createdAt: string;
+}
 
 interface ServiceStore {
+  banners: Banner[];
   services: ServiceProps[];
   serviceCategories: ServiceCategory[];
+  fetchBanners: () => Promise<void>;
   fetchServices: () => Promise<void>;
   fetchServiceCategories: () => Promise<void>;
   // addService: (newService: ServiceProps) => Promise<void>;
@@ -42,6 +60,8 @@ interface ServiceStore {
   deleteService: (serviceId: string) => Promise<void>;
   updateService: (updatedService: ServiceProps) => Promise<void>;
   addServiceCategory: (newCategory: ServiceCategory) => Promise<void>;
+  deleteBanner: (bannerId: string) => Promise<void>;
+  updateBanner: (updatedBanner: Banner) => Promise<void>;
   deleteServiceCategory: (categoryId: string) => Promise<void>;
   updateServiceCategory: (updatedCategory: ServiceCategory) => Promise<void>;
   reset: () => void;
@@ -50,6 +70,30 @@ interface ServiceStore {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
 }
+
+const fetchBanners = async (
+  set: (partial: (state: ServiceStore) => Partial<ServiceStore>) => void
+) => {
+  try {
+    set((state) => ({ ...state, isLoading: true, error: null }));
+    const response = await fetch("/api/banners");
+    if (!response.ok) throw new Error("Failed to fetch banners");
+    const data = await response.json();
+    set((state) => ({
+      ...state,
+      banners: Array.isArray(data) ? data : [],
+      isLoading: false,
+    }));
+  } catch (error) {
+    console.error("Error fetching banners:", error);
+    set((state) => ({
+      ...state,
+      banners: [],
+      error: "Не вдалося завантажити банери",
+      isLoading: false,
+    }));
+  }
+};
 
 const fetchServices = async (
   set: (partial: (state: ServiceStore) => Partial<ServiceStore>) => void
@@ -104,6 +148,7 @@ const fetchServiceCategories = async (
 };
 
 const useServiceStore = create<ServiceStore>((set) => ({
+  banners: [],
   services: [],
   serviceCategories: [],
   isLoading: false,
@@ -112,6 +157,7 @@ const useServiceStore = create<ServiceStore>((set) => ({
   setLoading: (loading: boolean) => set({ isLoading: loading }),
   setError: (error: string | null) => set({ error }),
 
+  fetchBanners: () => fetchBanners(set),
   fetchServices: () => fetchServices(set),
   fetchServiceCategories: () => fetchServiceCategories(set),
 
@@ -186,6 +232,52 @@ const useServiceStore = create<ServiceStore>((set) => ({
       }));
     } catch (error) {
       console.error("Error deleting service:", error);
+      throw error;
+    }
+  },
+  deleteBanner: async (bannerId) => {
+    try {
+      if (!bannerId) {
+        throw new Error("Banner ID is required");
+      }
+
+      const response = await fetch(`/api/banners/${bannerId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to delete banner: ${errorText}`);
+      }
+
+      set((state) => ({
+        banners: state.banners.filter((banner) => banner.id !== bannerId),
+      }));
+    } catch (error) {
+      console.error("Error deleting banner:", error);
+      throw error;
+    }
+  },
+  updateBanner: async (updatedBanner) => {
+    try {
+      const response = await fetch(`/api/banners/${updatedBanner.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedBanner),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to update banner: ${errorText}`);
+      }
+
+      set((state) => ({
+        banners: state.banners.map((banner) =>
+          banner.id === updatedBanner.id ? updatedBanner : banner
+        ),
+      }));
+    } catch (error) {
+      console.error("Error updating banner:", error);
       throw error;
     }
   },
@@ -265,7 +357,8 @@ const useServiceStore = create<ServiceStore>((set) => ({
       const response = await fetch(`/api/categories/${updatedCategory.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedCategory),
+        body: JSON.stringify({ name: updatedCategory.name }),
+        // body: JSON.stringify(updatedCategory),
       });
 
       if (!response.ok) {
@@ -285,6 +378,7 @@ const useServiceStore = create<ServiceStore>((set) => ({
 
   reset: () =>
     set({
+      banners: [],
       services: [],
       serviceCategories: [],
       isLoading: false,

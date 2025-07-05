@@ -1,8 +1,45 @@
+"use client";
+import HeroCarousel from "@/components/hero-carousel";
+
+import useServiceStore from "@/lib/serviceStore";
+// import fetchBanners from "@/lib/serviceStore";
+import { useEffect } from "react";
+// import CategoryFilter from "../components/modals/categoryFilter";
+// import ShowServices from "../components/showServices";
+import ServiceMenuView from "@/components/serviceMenuView";
+
 export default function Home() {
+  const {
+    // services = [],
+    banners,
+    fetchBanners,
+    fetchServices,
+    fetchServiceCategories,
+  } = useServiceStore();
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        await Promise.all([
+          fetchServices(),
+          fetchServiceCategories(),
+          fetchBanners(),
+        ]);
+      } catch (error) {
+        console.error("Помилка завантаження даних:", error);
+      }
+    };
+
+    loadData();
+  }, [fetchServices, fetchServiceCategories, fetchBanners]);
   return (
     <div className="flex flex-col items-center  min-h-screen py-2">
-      <main className="flex flex-col items-center justify-center w-full flex-1 px-20 text-center">
-        <h1>hello</h1>
+      <main className="flex flex-col items-center justify-center w-full flex-1 px-20 py-10 text-center">
+        {/* TODO: Pass the correct banners prop from your store or state */}
+        <HeroCarousel banners={banners} />
+        <h1>Here will be the main content area</h1>
+
+        <ServiceMenuView />
       </main>
     </div>
   );

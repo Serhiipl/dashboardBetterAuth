@@ -34,7 +34,10 @@ export const AlertModal: React.FC<AlertModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
     >
-      <div className="pt-6 space-x-2 flex items-center justify-end w-full">
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="pt-6 space-x-2 flex items-center justify-end w-full"
+      >
         <Button
           className="font-bold"
           disabled={loading}

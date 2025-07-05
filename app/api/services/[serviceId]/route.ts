@@ -3,14 +3,14 @@ import prisma from "@/lib/prisma";
 
 export async function PATCH(
   request: Request,
-  context: { params: { serviceId: string } }
+  params: { params: Promise<{ serviceId: string }> }
 ) {
   try {
     const body = await request.json();
     const { name, description, price, duration, active } = body;
 
     // Отримати serviceId з асинхронного params
-    const { serviceId } = await context.params;
+    const { serviceId } = await params.params;
 
     if (!name || !description || price == null || !duration) {
       return new NextResponse("All fields are required", { status: 400 });
@@ -46,15 +46,14 @@ export async function PATCH(
 }
 export async function DELETE(
   request: Request,
-  context: { params: { serviceId: string } }
+  params: { params: Promise<{ serviceId: string }> }
 ) {
   try {
-    if (!context || !context.params) {
+    const { serviceId } = await params.params;
+
+    if (!params || !params.params) {
       return NextResponse.json("Invalid request format", { status: 400 });
     }
-
-    // Отримати serviceId безпечно
-    const { serviceId } = await context.params;
 
     if (!serviceId) {
       return NextResponse.json("Service ID is required", { status: 400 });

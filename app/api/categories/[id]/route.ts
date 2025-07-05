@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
+// import { NextResponse, type NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 import { removePolishChars } from "@/lib/utils";
 
 export async function PATCH(
   request: Request,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { name } = body;
-    const { id } = await context.params;
 
     if (!name) {
       return new NextResponse("All fields are required", { status: 400 });
@@ -20,7 +21,6 @@ export async function PATCH(
       .toLowerCase()
       .replace(/\s+/g, "-");
 
-    // Sprawdzamy, czy kategoria o danej nazwie już istnieje
     const existingCategory = await prisma.category.findFirst({
       where: {
         AND: [
@@ -45,8 +45,6 @@ export async function PATCH(
       );
     }
 
-    // aktualizujemy usługę za pomocą id kategorii z params
-
     const category = await prisma.category.update({
       where: { id: id },
       data: { name, slug: generatedSlug },
@@ -61,16 +59,12 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    if (!context || !context.params) {
-      return NextResponse.json("Invalid request format", { status: 400 });
-    }
-    const { id } = await context.params;
-
+    const { id } = await params;
     if (!id) {
-      return NextResponse.json("Category ID is required", { status: 400 });
+      return new NextResponse("Category ID is required", { status: 400 });
     }
 
     const servicesUsingCategory = await prisma.service.findFirst({
@@ -78,19 +72,19 @@ export async function DELETE(
     });
 
     if (servicesUsingCategory) {
-      return NextResponse.json(
+      return new NextResponse(
         "Cannot delete category because it is used in services",
         { status: 409 }
       );
     }
 
     const category = await prisma.category.delete({
-      where: { id },
+      where: { id: id },
     });
 
     return NextResponse.json(category, { status: 200 });
   } catch (error) {
     console.error("Error deleting category:", error);
-    return NextResponse.json("Internal server error", { status: 500 });
+    return new NextResponse("Internal server error", { status: 500 });
   }
 }

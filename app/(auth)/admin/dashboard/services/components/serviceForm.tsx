@@ -52,21 +52,6 @@ const ServiceForm = () => {
 
   const onSubmit = async (data: ServiceFormValues) => {
     try {
-      // const response = await fetch("/api/services", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify(data),
-      // });
-
-      // if (!response.ok) {
-      //   throw new Error("Nie udało się dodać usługi");
-      // }
-
-      // const newService = await response.json();
-      // addService(newService);
-      // Використовуємо тільки addService з store, який вже робить API запит
       await addService(data);
       form.reset();
 

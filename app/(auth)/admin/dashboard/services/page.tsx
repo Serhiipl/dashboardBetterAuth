@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from "react";
 import AddService from "./components/addService";
 import { ServiceProps } from "@/lib/serviceStore";
-import ShowServices from "./components/showServices";
-import CategoryFilter from "./components/categoryFilter";
+import ShowServices from "../../../../../components/showServices";
+import CategoryFilter from "../../../../../components/modals/categoryFilter";
 import useServiceStore from "@/lib/serviceStore";
 
 // Компонент завантаження

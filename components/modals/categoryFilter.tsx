@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { ChevronDown, X, Filter, Search } from "lucide-react";
 import { ServiceCategory, ServiceProps } from "@/lib/serviceStore";
+import { useIsAdmin } from "@/lib/user-role";
 
 interface CategoryFilterProps {
   categories: ServiceCategory[];
@@ -85,6 +86,7 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
   onFilteredServicesChange,
   className = "",
 }) => {
+  const isAdmin = useIsAdmin();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -214,18 +216,20 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
               Очистити все
             </button>
           )}
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
-          >
-            {isExpanded ? "Zwiń" : "Rozwiń"}
-            <ChevronDown
-              size={16}
-              className={`transition-transform duration-200 ${
-                isExpanded ? "rotate-180" : ""
-              }`}
-            />
-          </button>
+          {isAdmin && (
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+            >
+              {isExpanded ? "Zwiń" : "Rozwiń"}
+              <ChevronDown
+                size={16}
+                className={`transition-transform duration-200 ${
+                  isExpanded ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+          )}
         </div>
       </div>
 
@@ -240,7 +244,8 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
       </div>
 
       {/* Вибрані категорії */}
-      {selectedCategories.length > 0 && (
+
+      {isAdmin && selectedCategories.length > 0 && (
         <div className="mb-4">
           <p className="text-sm text-gray-600 mb-2">
             Aktywne filtry kategorii:
@@ -264,7 +269,7 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
       )}
 
       {/* Розгорнутий режим */}
-      {isExpanded && (
+      {isAdmin && isExpanded && (
         <div className="space-y-4">
           {/* Пошук */}
           <div className="space-y-3">
@@ -410,3 +415,145 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
 };
 
 export default CategoryFilter;
+// "use client";
+
+// import React from "react";
+// import { ChevronDown, X, Filter, Search } from "lucide-react";
+// import { ServiceCategory, ServiceProps } from "@/lib/serviceStore";
+
+// interface CategoryFilterProps {
+//   categories: ServiceCategory[];
+//   services: ServiceProps[];
+//   filterState: {
+//     selectedCategories: string[];
+//     searchQueryByName: string;
+//     searchQueryDescription: string;
+//   };
+//   onToggleCategory: (categoryId: string) => void;
+//   onRemoveCategory: (categoryId: string) => void;
+//   onClearAll: () => void;
+//   onSearchByName: (value: string) => void;
+//   onSearchByDescription: (value: string) => void;
+// }
+
+// const CategoryFilter: React.FC<CategoryFilterProps> = ({
+//   categories,
+//   services,
+//   filterState,
+//   onToggleCategory,
+//   onRemoveCategory,
+//   onClearAll,
+//   onSearchByName,
+//   onSearchByDescription,
+// }) => {
+//   const { selectedCategories, searchQueryByName, searchQueryDescription } =
+//     filterState;
+
+//   // Підрахунок кількості послуг по категоріях
+//   const categoryStats = React.useMemo(() => {
+//     return categories.reduce((acc, category) => {
+//       acc[category.id] = services.filter(
+//         (s) => s.categoryId === category.id
+//       ).length;
+//       return acc;
+//     }, {} as Record<string, number>);
+//   }, [categories, services]);
+
+//   return (
+//     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+//       <div className="flex justify-between items-center mb-4">
+//         <div className="flex items-center gap-2">
+//           <Filter size={20} className="text-gray-600" />
+//           <h3 className="text-lg font-semibold text-gray-800">Фільтр</h3>
+//         </div>
+//         {(selectedCategories.length > 0 ||
+//           searchQueryByName.trim() ||
+//           searchQueryDescription.trim()) && (
+//           <button
+//             onClick={onClearAll}
+//             className="text-sm text-red-600 hover:text-red-700 font-medium"
+//           >
+//             Очистити все
+//           </button>
+//         )}
+//       </div>
+
+//       {/* Введення пошуку */}
+//       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+//         <div className="relative">
+//           <Search className="absolute left-3 top-2.5 text-gray-400" size={16} />
+//           <input
+//             value={searchQueryByName}
+//             onChange={(e) => onSearchByName(e.target.value)}
+//             className="w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+//             placeholder="Пошук за назвою"
+//           />
+//           {searchQueryByName && (
+//             <button
+//               onClick={() => onSearchByName("")}
+//               className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+//             >
+//               <X size={16} />
+//             </button>
+//           )}
+//         </div>
+
+//         <div className="relative">
+//           <Search className="absolute left-3 top-2.5 text-gray-400" size={16} />
+//           <input
+//             value={searchQueryDescription}
+//             onChange={(e) => onSearchByDescription(e.target.value)}
+//             className="w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+//             placeholder="Пошук за описом"
+//           />
+//           {searchQueryDescription && (
+//             <button
+//               onClick={() => onSearchByDescription("")}
+//               className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+//             >
+//               <X size={16} />
+//             </button>
+//           )}
+//         </div>
+//       </div>
+
+//       {/* Категорії */}
+//       <div className="flex flex-wrap gap-2">
+//         {categories.map((cat) => (
+//           <button
+//             key={cat.id}
+//             onClick={() => onToggleCategory(cat.id)}
+//             className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+//               selectedCategories.includes(cat.id)
+//                 ? "bg-blue-600 text-white shadow"
+//                 : "bg-white text-gray-800 border border-gray-300 hover:bg-gray-100"
+//             }`}
+//           >
+//             <span>{cat.name}</span>
+//             <span
+//               className={`text-xs px-2 py-0.5 rounded-full ${
+//                 selectedCategories.includes(cat.id)
+//                   ? "bg-blue-500 text-white"
+//                   : "bg-gray-200 text-gray-600"
+//               }`}
+//             >
+//               {categoryStats[cat.id] || 0}
+//             </span>
+//             {selectedCategories.includes(cat.id) && (
+//               <X
+//                 size={14}
+//                 className="ml-1 cursor-pointer"
+//                 onClick={(e) => {
+//                   e.stopPropagation();
+//                   onRemoveCategory(cat.id);
+//                 }}
+//               />
+//             )}
+//           </button>
+//         ))}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default CategoryFilter;
