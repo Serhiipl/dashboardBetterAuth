@@ -41,6 +41,13 @@ export interface Banner {
   updatedAt: string;
   images: BannerImage[];
 }
+export interface CreateBannerData {
+  title: string;
+  description?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  images: { url: string }[];
+}
 export interface BannerImage {
   id: string;
   bannerId: string;
@@ -60,6 +67,7 @@ interface ServiceStore {
   deleteService: (serviceId: string) => Promise<void>;
   updateService: (updatedService: ServiceProps) => Promise<void>;
   addServiceCategory: (newCategory: ServiceCategory) => Promise<void>;
+  addBanner: (newBanner: CreateBannerData) => Promise<void>;
   deleteBanner: (bannerId: string) => Promise<void>;
   updateBanner: (updatedBanner: Banner) => Promise<void>;
   deleteServiceCategory: (categoryId: string) => Promise<void>;
@@ -209,79 +217,6 @@ const useServiceStore = create<ServiceStore>((set) => ({
       throw error;
     }
   },
-
-  deleteService: async (serviceId) => {
-    try {
-      if (!serviceId) {
-        throw new Error("Service ID is required");
-      }
-
-      const response = await fetch(`/api/services/${serviceId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to delete service: ${errorText}`);
-      }
-
-      set((state) => ({
-        services: state.services.filter(
-          (service) => service.serviceId !== serviceId
-        ),
-      }));
-    } catch (error) {
-      console.error("Error deleting service:", error);
-      throw error;
-    }
-  },
-  deleteBanner: async (bannerId) => {
-    try {
-      if (!bannerId) {
-        throw new Error("Banner ID is required");
-      }
-
-      const response = await fetch(`/api/banners/${bannerId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to delete banner: ${errorText}`);
-      }
-
-      set((state) => ({
-        banners: state.banners.filter((banner) => banner.id !== bannerId),
-      }));
-    } catch (error) {
-      console.error("Error deleting banner:", error);
-      throw error;
-    }
-  },
-  updateBanner: async (updatedBanner) => {
-    try {
-      const response = await fetch(`/api/banners/${updatedBanner.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedBanner),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to update banner: ${errorText}`);
-      }
-
-      set((state) => ({
-        banners: state.banners.map((banner) =>
-          banner.id === updatedBanner.id ? updatedBanner : banner
-        ),
-      }));
-    } catch (error) {
-      console.error("Error updating banner:", error);
-      throw error;
-    }
-  },
-
   updateService: async (updatedService) => {
     try {
       const response = await fetch(
@@ -310,7 +245,95 @@ const useServiceStore = create<ServiceStore>((set) => ({
       throw error;
     }
   },
+  deleteService: async (serviceId) => {
+    try {
+      if (!serviceId) {
+        throw new Error("Service ID is required");
+      }
 
+      const response = await fetch(`/api/services/${serviceId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to delete service: ${errorText}`);
+      }
+
+      set((state) => ({
+        services: state.services.filter(
+          (service) => service.serviceId !== serviceId
+        ),
+      }));
+    } catch (error) {
+      console.error("Error deleting service:", error);
+      throw error;
+    }
+  },
+  addBanner: async (newBanner) => {
+    try {
+      const response = await fetch("/api/banners", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newBanner),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to add banner: ${errorText}`);
+      }
+      await fetchBanners(set);
+    } catch (error) {
+      console.error("Error adding banner:", error);
+      throw error;
+    }
+  },
+  updateBanner: async (updatedBanner) => {
+    try {
+      const response = await fetch(`/api/banners/${updatedBanner.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedBanner),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to update banner: ${errorText}`);
+      }
+
+      set((state) => ({
+        banners: state.banners.map((banner) =>
+          banner.id === updatedBanner.id ? updatedBanner : banner
+        ),
+      }));
+    } catch (error) {
+      console.error("Error updating banner:", error);
+      throw error;
+    }
+  },
+  deleteBanner: async (bannerId) => {
+    try {
+      if (!bannerId) {
+        throw new Error("Banner ID is required");
+      }
+
+      const response = await fetch(`/api/banners/${bannerId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to delete banner: ${errorText}`);
+      }
+
+      set((state) => ({
+        banners: state.banners.filter((banner) => banner.id !== bannerId),
+      }));
+    } catch (error) {
+      console.error("Error deleting banner:", error);
+      throw error;
+    }
+  },
   addServiceCategory: async (newCategory) => {
     try {
       const response = await fetch("/api/categories", {

@@ -6,92 +6,7 @@ import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { ServiceCategory, ServiceProps } from "@/lib/serviceStore";
 import ServiceCard from "@/components/serviceCard";
 import EmptyState from "@/components/emptyItemState";
-
-// Компонент для відображення статусу послуги
-// const ServiceStatus: React.FC<{ active: boolean }> = ({ active }) => (
-//   <span
-//     className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-//       active ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-//     }`}
-//   >
-//     <span
-//       className={`w-2 h-2 rounded-full mr-1 ${
-//         active ? "bg-green-400" : "bg-red-400"
-//       }`}
-//     />
-//     {active ? "Aktywna" : "Nieaktywna"}
-//   </span>
-// );
-
-// Компонент для картки послуги
-// const ServiceCard: React.FC<{
-//   service: ServiceProps;
-//   categoryName?: string;
-// }> = ({ service, categoryName }) => (
-//   <li className="group bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden">
-//     <div className="p-4 relative">
-//       <CellAction
-//         className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-//         data={service}
-//       />
-
-//       {/* Заголовок */}
-//       <div className="mb-3">
-//         <h3 className="text-lg font-semibold text-gray-900 truncate pr-8">
-//           {service.name}
-//         </h3>
-//         <p className="bg-cyan-50 text-indigo-800 text-sm max-w-fit px-4 rounded-full mt-1">
-//           {categoryName || (
-//             <span className="italic text-gray-400">Brak kategorii</span>
-//           )}
-//         </p>
-//       </div>
-
-//       {/* Основна інформація */}
-//       <div className="flex justify-between items-center mb-3">
-//         <div className="flex items-center space-x-4">
-//           <p className="text-sm font-normal text-slate-950">
-//             Cena: <span className="font-bold">{service.price}</span> zł
-//           </p>
-//           <span className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">
-//             {service.duration} min
-//           </span>
-//         </div>
-//         <ServiceStatus active={service.active} />
-//       </div>
-
-//       {/* Опис */}
-//       {service.description && (
-//         <p className="text-gray-600 text-sm line-clamp-4 leading-relaxed">
-//           {service.description}
-//         </p>
-//       )}
-//     </div>
-//   </li>
-// );
-
-// Компонент для пустого стану
-
-// Компонент завантаження
-const LoadingState: React.FC = () => (
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-    {Array.from({ length: 4 }).map((_, index) => (
-      <div
-        key={index}
-        className="bg-white rounded-lg shadow-md p-4 animate-pulse"
-      >
-        <div className="h-6 bg-gray-200 rounded mb-2"></div>
-        <div className="h-4 bg-gray-200 rounded mb-3 w-3/4"></div>
-        <div className="flex justify-between mb-3">
-          <div className="h-6 bg-gray-200 rounded w-20"></div>
-          <div className="h-5 bg-gray-200 rounded w-16"></div>
-        </div>
-        <div className="h-4 bg-gray-200 rounded mb-2"></div>
-        <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-      </div>
-    ))}
-  </div>
-);
+import LoadingState from "./loadingItemState";
 
 interface ShowServicesProps {
   services: ServiceProps[];
@@ -153,16 +68,15 @@ const ShowServices: React.FC<ShowServicesProps> = ({
     <div className="bg-slate-50 p-6 rounded-xl">
       {/* Заголовок */}
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800">Usługi</h2>
-          <p className="text-gray-600 mt-1">
-            Znaleziono {servicesToDisplay.length}{" "}
-            {servicesToDisplay.length === 1 ? "usługa" : "usług"}
+        <div className="flex gap-2 items-center">
+          <h2 className="text-2xl font-bold text-gray-800">Usługi:</h2>
+          <p className="text-gray-600 mt-1 text-sm">
+            Znaleziono: {servicesToDisplay.length}...
           </p>
         </div>
 
         {/* Кнопка оновлення */}
-        <button
+        {/* <button
           onClick={loadData}
           disabled={isLoading}
           className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -181,7 +95,7 @@ const ShowServices: React.FC<ShowServicesProps> = ({
             />
           </svg>
           <span>Aktualizuj</span>
-        </button>
+        </button> */}
       </div>
 
       {/* Обробка помилок */}

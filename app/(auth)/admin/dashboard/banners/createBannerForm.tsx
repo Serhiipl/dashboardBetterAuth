@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ImageUpload from "@/components/image-upload";
+import toast from "react-hot-toast";
+import useServiceStore from "@/lib/serviceStore";
 
 export default function CreateBannerForm() {
   const [images, setImages] = useState<string[]>([]);
@@ -15,7 +17,7 @@ export default function CreateBannerForm() {
   const [ctaText, setCtaText] = useState("");
   const [ctaLink, setCtaLink] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const { fetchBanners } = useServiceStore();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || images.length === 0) {
@@ -36,10 +38,14 @@ export default function CreateBannerForm() {
           images,
         }),
       });
-
+      fetchBanners(); // Refresh banners after creation
       if (!res.ok) throw new Error("Failed to create banner");
 
-      alert("Banner created successfully");
+      toast.success("Dodano nowy banner! 🎉", {
+        duration: 3000,
+        position: "top-center",
+        icon: "👏",
+      });
       setTitle("");
       setDescription("");
       setCtaText("");
@@ -47,7 +53,11 @@ export default function CreateBannerForm() {
       setImages([]);
     } catch (error) {
       console.error(error);
-      alert("Error creating banner");
+      toast.error("Wystąpił błąd podczas dodawania banera.", {
+        position: "top-center",
+        duration: 3000,
+        icon: "❌",
+      });
     } finally {
       setLoading(false);
     }

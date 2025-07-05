@@ -1,8 +1,8 @@
 "use client";
 
 import useServiceStore, { ServiceProps } from "@/lib/serviceStore";
-import CategoryFilter from "../../../components/modals/categoryFilter";
-import ShowServices from "../../../components/showServices";
+import CategoryFilter from "@/components/modals/categoryFilter";
+import ShowServices from "@/components/showServices";
 import { useEffect, useState } from "react";
 
 export default function AdminPage() {

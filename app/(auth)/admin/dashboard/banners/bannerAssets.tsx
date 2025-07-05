@@ -17,6 +17,7 @@ export default function BannerAssets() {
   } = useServiceStore();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
 
   useEffect(() => {
     const loadBanners = async () => {
@@ -31,16 +32,25 @@ export default function BannerAssets() {
 
   if (isLoading) return <div>Loading...</div>;
 
-  const handleEdit = (bannerId: string, currentTitle: string) => {
+  const handleEdit = (
+    bannerId: string,
+    currentTitle: string,
+    currentDescription: string
+  ) => {
     setEditingId(bannerId);
     setEditTitle(currentTitle);
+    setEditDescription(currentDescription);
   };
   const handleSave = async () => {
-    if (!editingId || !editTitle.trim()) return;
+    if (!editingId || !editTitle.trim() || !editDescription.trim()) return;
     const originalBanner = banners.find((b) => b.id === editingId);
     if (!originalBanner) return;
     try {
-      await updateBanner({ ...originalBanner, title: editTitle });
+      await updateBanner({
+        ...originalBanner,
+        title: editTitle,
+        description: editDescription,
+      });
       setEditingId(null);
     } catch (error) {
       console.error("Failed to update banner:", error);
@@ -81,6 +91,11 @@ export default function BannerAssets() {
                   onChange={(e) => setEditTitle(e.target.value)}
                   className="w-64"
                 />
+                <Input
+                  value={editDescription}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-64"
+                />
                 <Button onClick={() => handleSave()} className="bg-green-600">
                   Save
                 </Button>
@@ -95,7 +110,13 @@ export default function BannerAssets() {
               <>
                 <span className="flex-1">{banner.title}</span>
                 <Button
-                  onClick={() => handleEdit(banner.id, banner.title)}
+                  onClick={() =>
+                    handleEdit(
+                      banner.id,
+                      banner.title,
+                      banner.description || ""
+                    )
+                  }
                   className="bg-blue-500 text-white px-2 py-1 rounded mr-2"
                 >
                   Edit

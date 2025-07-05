@@ -38,8 +38,6 @@ export async function POST(request: Request) {
     if (!duration) {
       return new NextResponse("Time is required", { status: 400 });
     }
-    // Tworzenie nowego zapisu w bazie danych
-    console.log("Incoming images:", images);
 
     const service = await prisma.service.create({
       data: {
@@ -66,8 +64,6 @@ export async function POST(request: Request) {
         },
       },
     });
-    console.log("🛠️ POST /api/services called. Images:", images);
-    console.log("🔁 FULL BODY", body);
 
     return NextResponse.json(service, { status: 201 });
   } catch (error) {

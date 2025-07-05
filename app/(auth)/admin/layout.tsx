@@ -17,6 +17,8 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
   // BreadcrumbPage,
   // BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
@@ -192,16 +194,16 @@ function DashboardBreadcrumb() {
             <Link href="/admin/dashboard">Dashboard</Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
-        {/* <BreadcrumbSeparator /> */}
-        {/* <BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
           <BreadcrumbLink asChild>
-            <Link href="#">Products</Link>
+            <Link href="/admin/dashboard/services">Usługi</Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbPage>All Products</BreadcrumbPage>
-        </BreadcrumbItem> */}
+          <BreadcrumbPage>Usługi i kategorie</BreadcrumbPage>
+        </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>
   );
