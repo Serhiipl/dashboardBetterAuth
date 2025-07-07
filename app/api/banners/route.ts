@@ -7,9 +7,6 @@ import { authClient } from "@/auth-client";
 export async function GET() {
   try {
     const banners = await prisma.banner.findMany({
-      include: {
-        images: true,
-      },
       orderBy: { createdAt: "desc" },
     });
     return NextResponse.json(banners, { status: 200 });
@@ -36,11 +33,11 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { images, title, description, ctaText, ctaLink } =
+    const { title, description, ctaText, ctaLink, imageUrl } =
       await request.json();
 
-    if (!images || !Array.isArray(images) || images.length === 0 || !title) {
-      return new NextResponse("images[] and title are required", {
+    if (!title || !imageUrl) {
+      return new NextResponse("imageUrl and title are required", {
         status: 400,
       });
     }
@@ -51,11 +48,7 @@ export async function POST(request: Request) {
         description: description || null,
         ctaText: ctaText || null,
         ctaLink: ctaLink || null,
-        images: {
-          createMany: {
-            data: images.map((url: string) => ({ url })),
-          },
-        },
+        imageUrl,
       },
     });
 

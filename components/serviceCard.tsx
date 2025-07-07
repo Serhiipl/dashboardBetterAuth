@@ -54,7 +54,7 @@ const ServiceCard: React.FC<{
     <>
       <li
         onClick={handleClick}
-        className="group bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden"
+        className="group bg-white  rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden"
       >
         <div className="p-4 relative">
           {/* <CellAction */}

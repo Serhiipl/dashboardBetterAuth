@@ -65,7 +65,7 @@ const ShowServices: React.FC<ShowServicesProps> = ({
   const servicesToDisplay = filteredServices || [];
 
   return (
-    <div className="bg-slate-50 p-6 rounded-xl">
+    <div className="bg-slate-50 p-2 rounded-xl">
       {/* Заголовок */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex gap-2 items-center">

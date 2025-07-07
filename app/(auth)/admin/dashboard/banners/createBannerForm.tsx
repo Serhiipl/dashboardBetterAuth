@@ -17,7 +17,8 @@ export default function CreateBannerForm() {
   const [ctaText, setCtaText] = useState("");
   const [ctaLink, setCtaLink] = useState("");
   const [loading, setLoading] = useState(false);
-  const { fetchBanners } = useServiceStore();
+  const { addBanner, fetchBanners } = useServiceStore();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || images.length === 0) {
@@ -27,20 +28,14 @@ export default function CreateBannerForm() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/banners", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          description: description || undefined,
-          ctaText: ctaText || undefined,
-          ctaLink: ctaLink || undefined,
-          images,
-        }),
+      await addBanner({
+        title,
+        description: description || undefined,
+        ctaText: ctaText || undefined,
+        ctaLink: ctaLink || undefined,
+        imageUrl: images[0], // Assuming you want to use the first image as the main banner image
       });
       fetchBanners(); // Refresh banners after creation
-      if (!res.ok) throw new Error("Failed to create banner");
-
       toast.success("Dodano nowy banner! 🎉", {
         duration: 3000,
         position: "top-center",

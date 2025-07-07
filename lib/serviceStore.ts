@@ -39,20 +39,14 @@ export interface Banner {
   ctaLink?: string;
   createdAt: string;
   updatedAt: string;
-  images: BannerImage[];
+  imageUrl: string;
 }
 export interface CreateBannerData {
   title: string;
   description?: string;
   ctaText?: string;
   ctaLink?: string;
-  images: { url: string }[];
-}
-export interface BannerImage {
-  id: string;
-  bannerId: string;
-  url: string;
-  createdAt: string;
+  imageUrl: string;
 }
 
 interface ServiceStore {
@@ -168,26 +162,6 @@ const useServiceStore = create<ServiceStore>((set) => ({
   fetchBanners: () => fetchBanners(set),
   fetchServices: () => fetchServices(set),
   fetchServiceCategories: () => fetchServiceCategories(set),
-
-  // addService: async (newService) => {
-  //   try {
-  //     const response = await fetch("/api/services", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify(newService),
-  //     });
-
-  //     if (!response.ok) {
-  //       throw new Error("Failed to add service");
-  //     }
-
-  //     // Оновлюємо список послуг
-  //     await fetchServices(set);
-  //   } catch (error) {
-  //     console.error("Error adding service:", error);
-  //     throw error;
-  //   }
-  // },
 
   addService: async (newService) => {
     try {
@@ -410,4 +384,4 @@ const useServiceStore = create<ServiceStore>((set) => ({
 }));
 
 export default useServiceStore;
-export { fetchServices, fetchServiceCategories };
+export { fetchBanners, fetchServices, fetchServiceCategories };

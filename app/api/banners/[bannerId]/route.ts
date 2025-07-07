@@ -7,7 +7,7 @@ export async function PATCH(
 ) {
   try {
     const body = await request.json();
-    const { title, description, ctaText, ctaLink } = body;
+    const { title, description, ctaText, ctaLink, imageUrl } = body;
 
     // Отримати serviceId з асинхронного params
     const { bannerId } = await params.params;
@@ -23,6 +23,7 @@ export async function PATCH(
         description: description || "",
         ctaText: ctaText || "",
         ctaLink: ctaLink || "",
+        imageUrl,
       },
     });
 

@@ -71,10 +71,10 @@ export default function BannerAssets() {
       <ul className="space-y-4 min-h-fit flex flex-col gap-5 h-28 ">
         {banners.map((banner) => (
           <li key={banner.id} className="flex  items-center space-x-4">
-            {banner.images?.[0]?.url ? (
+            {banner.imageUrl ? (
               <div className="w-40 h-20 relative">
                 <Image
-                  src={banner.images[0].url}
+                  src={banner.imageUrl}
                   alt={banner.title}
                   width={160}
                   height={80}

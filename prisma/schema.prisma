@@ -194,21 +194,12 @@ model Staff {
 //   @@index([serviceId])
 // }
 model Banner {
-  id          String        @id @default(cuid()) @map("_id")
+  id          String   @id @default(cuid()) @map("_id")
   title       String
   description String?
   ctaText     String?
   ctaLink     String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  images      BannerImage[]
-}
-
-model BannerImage {
-  id        String   @id @default(cuid()) @map("_id")
-  bannerId  String
-  url       String
-  createdAt DateTime @default(now())
-
-  banner Banner @relation(fields: [bannerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  imageUrl    String
 }
