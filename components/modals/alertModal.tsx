@@ -29,7 +29,7 @@ export const AlertModal: React.FC<AlertModalProps> = ({
 
   return (
     <Modal
-      title="Jesteś pewna?"
+      title="Jesteś pewny/a?"
       description="Usunięcie nie odwrotne =)"
       isOpen={isOpen}
       onClose={onClose}
@@ -52,7 +52,7 @@ export const AlertModal: React.FC<AlertModalProps> = ({
           variant="outline"
           onClick={onConfirm}
         >
-          Usuń usługe!
+          Usuń!
         </Button>
       </div>
     </Modal>

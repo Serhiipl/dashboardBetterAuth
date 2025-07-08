@@ -36,8 +36,6 @@ export default function Home() {
     <div className="flex flex-col items-center  min-h-screen py-2">
       <main className="flex flex-col items-center justify-center w-full flex-1 md:px-20 py-10 text-center">
         <HeroCarousel banners={banners} />
-        <h1>Here will be the main content area</h1>
-
         <ServiceMenuView />
       </main>
     </div>

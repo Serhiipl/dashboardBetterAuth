@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { ChevronDown, X, Filter, Search } from "lucide-react";
 import { ServiceCategory, ServiceProps } from "@/lib/serviceStore";
-import { useIsAdmin } from "@/lib/user-role";
+import { useIsAdmin } from "@/hooks/user-role";
 
 interface CategoryFilterProps {
   categories: ServiceCategory[];

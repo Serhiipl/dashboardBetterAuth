@@ -1,7 +1,7 @@
 import { ServiceProps } from "@/lib/serviceStore";
 import CellAction from "../app/(auth)/admin/dashboard/services/components/cellAction";
 import Image from "next/image";
-import { useIsAdmin } from "@/lib/user-role";
+import { useIsAdmin } from "@/hooks/user-role";
 // import ServiceModal from "./ServiceModal";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useRouter } from "next/navigation";

@@ -16,7 +16,7 @@ import {
 import toast from "react-hot-toast";
 import { AlertModal } from "@/components/modals/alertModal";
 import { ServiceChangeModal } from "@/components/modals/serviceModal";
-// import { ServiceChangeModal } from "./modals/serviceModal";
+// import { EditServiceModal } from "@/components/modals/editServiceModal";
 
 interface CellActionProps {
   className?: string;
@@ -59,6 +59,12 @@ const CellAction: React.FC<CellActionProps> = ({ className, data }) => {
         onClose={() => setEditOpen(false)}
         serviceData={data}
       />
+      {/* <EditServiceModal
+        isOpen={editOpen}
+        onClose={() => setEditOpen(false)}
+        service={data}
+        categories={useServiceStore((state) => state.serviceCategories)}
+      /> */}
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

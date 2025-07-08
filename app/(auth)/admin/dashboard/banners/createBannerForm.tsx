@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ImageUpload from "@/components/image-upload";
 import toast from "react-hot-toast";
 import useServiceStore from "@/lib/serviceStore";
+import { useIsAdmin } from "@/hooks/user-role";
 
 export default function CreateBannerForm() {
   const [images, setImages] = useState<string[]>([]);
@@ -18,6 +19,9 @@ export default function CreateBannerForm() {
   const [ctaLink, setCtaLink] = useState("");
   const [loading, setLoading] = useState(false);
   const { addBanner, fetchBanners } = useServiceStore();
+
+  const isAdmin = useIsAdmin();
+  if (!isAdmin) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +64,7 @@ export default function CreateBannerForm() {
 
   return (
     <div className="p-4 bg-gray-50 min-h-screen w-full">
-      <Card className="max-w-2xl mx-auto">
+      <Card className=" w-full mx-auto">
         <CardHeader>
           <CardTitle>Stwórz Nowy Banner</CardTitle>
         </CardHeader>
