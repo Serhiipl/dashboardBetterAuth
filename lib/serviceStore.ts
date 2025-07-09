@@ -10,7 +10,6 @@ export interface ServiceProps {
   active: boolean;
   categoryId: string;
 }
-
 // Тип для створення нової послуги (без serviceId)
 export interface CreateServiceData {
   name: string;
@@ -55,6 +54,9 @@ interface ServiceStore {
   serviceCategories: ServiceCategory[];
   fetchBanners: () => Promise<void>;
   fetchServices: () => Promise<void>;
+  servicesFetched: boolean; // Додаємо прапорець для перевірки, чи були послуги завантажені
+  bannersFetched: boolean;
+  categoriesFetched: boolean;
   fetchServiceCategories: () => Promise<void>;
   // addService: (newService: ServiceProps) => Promise<void>;
   addService: (newService: CreateServiceData) => Promise<void>;
@@ -74,8 +76,10 @@ interface ServiceStore {
 }
 
 const fetchBanners = async (
-  set: (partial: (state: ServiceStore) => Partial<ServiceStore>) => void
+  set: (partial: (state: ServiceStore) => Partial<ServiceStore>) => void,
+  get: () => ServiceStore
 ) => {
+  if (get().bannersFetched) return; // Якщо банери вже завантажені, не робимо повторний запит
   try {
     set((state) => ({ ...state, isLoading: true, error: null }));
     const response = await fetch("/api/banners");
@@ -84,6 +88,7 @@ const fetchBanners = async (
     set((state) => ({
       ...state,
       banners: Array.isArray(data) ? data : [],
+      bannersFetched: true, // Додаємо прапорець для перевірки, чи були банери завантажені
       isLoading: false,
     }));
   } catch (error) {
@@ -98,8 +103,10 @@ const fetchBanners = async (
 };
 
 const fetchServices = async (
-  set: (partial: (state: ServiceStore) => Partial<ServiceStore>) => void
+  set: (partial: (state: ServiceStore) => Partial<ServiceStore>) => void,
+  get: () => ServiceStore
 ) => {
+  if (get().servicesFetched) return; // Якщо послуги вже завантажені, не робимо повторний запит
   try {
     set((state) => ({ ...state, isLoading: true, error: null }));
     const response = await fetch("/api/services");
@@ -110,6 +117,7 @@ const fetchServices = async (
     set((state) => ({
       ...state,
       services: Array.isArray(data) ? data : [],
+      servicesFetched: true, // Додаємо прапорець для перевірки, чи були послуги завантажені
       isLoading: false,
     }));
   } catch (error) {
@@ -124,8 +132,10 @@ const fetchServices = async (
 };
 
 const fetchServiceCategories = async (
-  set: (partial: (state: ServiceStore) => Partial<ServiceStore>) => void
+  set: (partial: (state: ServiceStore) => Partial<ServiceStore>) => void,
+  get: () => ServiceStore
 ) => {
+  if (get().categoriesFetched) return; // Якщо категорії вже завантажені, не робимо повторний запит
   try {
     set((state) => ({ ...state, isLoading: true, error: null }));
     const response = await fetch("/api/categories");
@@ -136,6 +146,7 @@ const fetchServiceCategories = async (
     set((state) => ({
       ...state,
       serviceCategories: Array.isArray(data) ? data : [],
+      categoriesFetched: true, // Додаємо прапорець для перевірки, чи були категорії завантажені
       isLoading: false,
     }));
   } catch (error) {
@@ -149,19 +160,22 @@ const fetchServiceCategories = async (
   }
 };
 
-const useServiceStore = create<ServiceStore>((set) => ({
+const useServiceStore = create<ServiceStore>((set, get) => ({
   banners: [],
   services: [],
   serviceCategories: [],
   isLoading: false,
   error: null,
+  bannersFetched: false, // Додаємо прапорець для перевірки, чи були банери завантажені
+  servicesFetched: false,
+  categoriesFetched: false, // Додаємо прапорець для перевірки, чи були категорії завантажені
 
   setLoading: (loading: boolean) => set({ isLoading: loading }),
   setError: (error: string | null) => set({ error }),
 
-  fetchBanners: () => fetchBanners(set),
-  fetchServices: () => fetchServices(set),
-  fetchServiceCategories: () => fetchServiceCategories(set),
+  fetchBanners: () => fetchBanners(set, get),
+  fetchServices: () => fetchServices(set, get),
+  fetchServiceCategories: () => fetchServiceCategories(set, get),
 
   addService: async (newService) => {
     try {
@@ -178,7 +192,7 @@ const useServiceStore = create<ServiceStore>((set) => ({
       }
 
       // Після успішного створення - оновлюємо список послуг
-      await fetchServices(set);
+      await fetchServices(set, get);
 
       set((state) => ({ ...state, isLoading: false }));
     } catch (error) {
@@ -256,7 +270,7 @@ const useServiceStore = create<ServiceStore>((set) => ({
         const errorText = await response.text();
         throw new Error(`Failed to add banner: ${errorText}`);
       }
-      await fetchBanners(set);
+      await fetchBanners(set, get);
     } catch (error) {
       console.error("Error adding banner:", error);
       throw error;
@@ -321,7 +335,7 @@ const useServiceStore = create<ServiceStore>((set) => ({
         throw new Error(`Failed to add category: ${errorText}`);
       }
 
-      await fetchServiceCategories(set);
+      await fetchServiceCategories(set, get);
     } catch (error) {
       console.error("Error adding service category:", error);
       throw error;

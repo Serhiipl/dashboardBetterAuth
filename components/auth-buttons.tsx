@@ -12,7 +12,7 @@ export default function AuthButtons() {
   if (error) return <div>Error loading session!</div>;
 
   const userRole = session?.user.role;
-
+  console.log(userRole, "userRole in AuthButtons");
   return !session ? (
     <div className="flex gap-2 justify-center">
       <Link href="/sign-in">
