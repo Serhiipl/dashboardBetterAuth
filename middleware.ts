@@ -69,7 +69,15 @@ import { betterFetch } from "@better-fetch/fetch";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Session } from "@/auth";
 
-const publicRoutes = ["/"];
+const publicRoutes = [
+  "/",
+  "/home",
+  "/about",
+  "/contact",
+  "/services",
+  /^\/services\/[^/]+$/, // регулярний вираз для /services/[serviceId]
+  "/categories",
+];
 const authRoutes = ["/sign-in", "/sign-up"];
 const passwordRoutes = ["/reset-password", "/forgot-password"];
 const adminRoutes = ["/admin", "/admin/dashboard"];
@@ -77,7 +85,9 @@ const adminRoutes = ["/admin", "/admin/dashboard"];
 export default async function authMiddleware(request: NextRequest) {
   const pathName = request.nextUrl.pathname;
 
-  const isPublicRoute = publicRoutes.includes(pathName);
+  const isPublicRoute = publicRoutes.some((route) =>
+    typeof route === "string" ? route === pathName : route.test(pathName)
+  );
   const isAuthRoute = authRoutes.includes(pathName);
   const isPasswordRoute = passwordRoutes.includes(pathName);
   const isAdminRoute = adminRoutes.includes(pathName);
