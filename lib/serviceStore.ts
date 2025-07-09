@@ -57,6 +57,9 @@ interface ServiceStore {
   servicesFetched: boolean; // Додаємо прапорець для перевірки, чи були послуги завантажені
   bannersFetched: boolean;
   categoriesFetched: boolean;
+  servicesFetchedAt: number | null;
+  bannersFetchedAt: number | null;
+  categoriesFetchedAt: number | null;
   fetchServiceCategories: () => Promise<void>;
   // addService: (newService: ServiceProps) => Promise<void>;
   addService: (newService: CreateServiceData) => Promise<void>;
@@ -79,7 +82,10 @@ const fetchBanners = async (
   set: (partial: (state: ServiceStore) => Partial<ServiceStore>) => void,
   get: () => ServiceStore
 ) => {
-  if (get().bannersFetched) return; // Якщо банери вже завантажені, не робимо повторний запит
+  const now = Date.now();
+  const lastFetched = get().bannersFetchedAt;
+  const TTL = 5 * 60 * 1000;
+  if (lastFetched && now - lastFetched < TTL) return; // Якщо банери вже завантажені, не робимо повторний запит
   try {
     set((state) => ({ ...state, isLoading: true, error: null }));
     const response = await fetch("/api/banners");
@@ -89,6 +95,7 @@ const fetchBanners = async (
       ...state,
       banners: Array.isArray(data) ? data : [],
       bannersFetched: true, // Додаємо прапорець для перевірки, чи були банери завантажені
+      bannersFetchedAt: Date.now(),
       isLoading: false,
     }));
   } catch (error) {
@@ -106,7 +113,10 @@ const fetchServices = async (
   set: (partial: (state: ServiceStore) => Partial<ServiceStore>) => void,
   get: () => ServiceStore
 ) => {
-  if (get().servicesFetched) return; // Якщо послуги вже завантажені, не робимо повторний запит
+  const now = Date.now();
+  const lastFetched = get().servicesFetchedAt;
+  const TTL = 5 * 60 * 1000; // 5 хвилин
+  if (lastFetched && now - lastFetched < TTL) return; // Якщо послуги вже завантажені, не робимо повторний запит
   try {
     set((state) => ({ ...state, isLoading: true, error: null }));
     const response = await fetch("/api/services");
@@ -118,6 +128,7 @@ const fetchServices = async (
       ...state,
       services: Array.isArray(data) ? data : [],
       servicesFetched: true, // Додаємо прапорець для перевірки, чи були послуги завантажені
+      servicesFetchedAt: Date.now(),
       isLoading: false,
     }));
   } catch (error) {
@@ -135,7 +146,10 @@ const fetchServiceCategories = async (
   set: (partial: (state: ServiceStore) => Partial<ServiceStore>) => void,
   get: () => ServiceStore
 ) => {
-  if (get().categoriesFetched) return; // Якщо категорії вже завантажені, не робимо повторний запит
+  const now = Date.now();
+  const lastFetched = get().categoriesFetchedAt;
+  const TTL = 5 * 60 * 1000;
+  if (lastFetched && now - lastFetched < TTL) return; // Якщо категорії вже завантажені, не робимо повторний запит
   try {
     set((state) => ({ ...state, isLoading: true, error: null }));
     const response = await fetch("/api/categories");
@@ -147,6 +161,7 @@ const fetchServiceCategories = async (
       ...state,
       serviceCategories: Array.isArray(data) ? data : [],
       categoriesFetched: true, // Додаємо прапорець для перевірки, чи були категорії завантажені
+      categoriesFetchedAt: Date.now(),
       isLoading: false,
     }));
   } catch (error) {
@@ -169,6 +184,9 @@ const useServiceStore = create<ServiceStore>((set, get) => ({
   bannersFetched: false, // Додаємо прапорець для перевірки, чи були банери завантажені
   servicesFetched: false,
   categoriesFetched: false, // Додаємо прапорець для перевірки, чи були категорії завантажені
+  servicesFetchedAt: null,
+  bannersFetchedAt: null,
+  categoriesFetchedAt: null,
 
   setLoading: (loading: boolean) => set({ isLoading: loading }),
   setError: (error: string | null) => set({ error }),
@@ -394,6 +412,9 @@ const useServiceStore = create<ServiceStore>((set, get) => ({
       serviceCategories: [],
       isLoading: false,
       error: null,
+      servicesFetchedAt: null,
+      bannersFetchedAt: null,
+      categoriesFetchedAt: null,
     }),
 }));
 
