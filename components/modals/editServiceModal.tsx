@@ -59,15 +59,28 @@ export const EditServiceModal: React.FC<EditServiceModalProps> = ({
       }
     };
     loadInitialData();
-  }, [fetchServices, fetchServiceCategories, service]);
+  }, [fetchServices, fetchServiceCategories, service, categories]);
 
   const { name, description, categoryId, price, active, images } = formData;
+  const updateService = useServiceStore((state) => state.updateService);
 
   const [loading, setLoading] = useState(false);
   const handleSave = async () => {
     setLoading(true);
     try {
-      await updateService(formData);
+      if (!service) {
+        throw new Error("No service selected for editing.");
+      }
+      await updateService({
+        serviceId: service.serviceId,
+        name: formData.name,
+        description: formData.description,
+        categoryId: formData.categoryId,
+        price: Number(formData.price),
+        duration: Number(formData.duration),
+        active: formData.active,
+        images: service.images, // assuming images are not edited here, otherwise map formData.images to correct type
+      });
       await fetchServices();
       onClose();
     } catch (error) {
@@ -188,15 +201,3 @@ export const EditServiceModal: React.FC<EditServiceModalProps> = ({
     </Dialog>
   );
 };
-
-function updateService(formData: {
-  name: string;
-  description: string;
-  categoryId: string;
-  price: string;
-  duration: string;
-  active: boolean;
-  images: string[];
-}) {
-  throw new Error("Function not implemented.");
-}

@@ -25,6 +25,7 @@
 *.pem
 .env.local
 .env
+.env*
 
 # debug
 npm-debug.log*
