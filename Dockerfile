@@ -1,4 +1,4 @@
-
+# Dockerfile for Next.js application with Prisma
 
 # 1. Build stage
 FROM node:22-alpine AS builder
