@@ -1,21 +1,18 @@
-# Dockerfile for Next.js application with Prisma
-
 # 1. Build stage
 FROM node:22-alpine AS builder
 WORKDIR /app
 
-# Копіюємо залежності окремо для кешування
+# Копіюємо лише залежності для кешування
 COPY package.json package-lock.json ./
 RUN npm install
 
-# Копіюємо решту проекту
+# Копіюємо увесь проєкт
 COPY . .
 
-# Генеруємо Prisma Client
+# Генерація Prisma Client
 RUN npx prisma generate
 
-# Білдимо Next.js
-
+# Білд Next.js
 RUN npm run build
 
 # 2. Production stage
@@ -25,14 +22,27 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Копіюємо готові білди
+# Копіюємо результати білду
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 
+# Копіюємо потрібні конфіги та код
+COPY --from=builder /app/next.config.js ./next.config.js
+COPY --from=builder /app/tailwind.config.ts ./tailwind.config.ts
+COPY --from=builder /app/postcss.config.mjs ./postcss.config.mjs
+COPY --from=builder /app/eslint.config.mjs ./eslint.config.mjs
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
+
+COPY --from=builder /app/app ./app
+COPY --from=builder /app/components ./components
+COPY --from=builder /app/lib ./lib
+COPY --from=builder /app/hooks ./hooks
+COPY --from=builder /app/middleware.ts ./middleware.ts
 
 EXPOSE 3000
 
+# Запуск Next.js у продакшн
 CMD ["node_modules/.bin/next", "start"]

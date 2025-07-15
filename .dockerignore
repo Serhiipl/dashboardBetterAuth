@@ -1,6 +1,8 @@
 node_modules
 .next
 .dockerignore
+Dockerfile
+docker-compose.yml
 *.log
 .DS_Store
 .AppleDouble
