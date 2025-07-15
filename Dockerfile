@@ -15,7 +15,7 @@ COPY . .
 RUN npx prisma generate
 
 # Білдимо Next.js
-RUN ls -la /app && cat next.config.ts
+
 RUN npm run build
 
 # 2. Production stage
