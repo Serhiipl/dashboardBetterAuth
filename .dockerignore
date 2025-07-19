@@ -1,9 +1,52 @@
+# 🧹 Node
 node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# 🏗️ Next.js
 .next
+out
+
+# 🌿 Git
+.git
+.gitignore
+
+# 🧪 Конфігурації для лінтингу й форматування (тільки dev)
+.eslintrc*
+eslint.config.*
+.prettierrc*
+.prettier.config.*
+stylelint.config.*
+.editorconfig
+
+# ⚙️ Конфігурації білду — не потрібні у продакшн
+tailwind.config.*
+postcss.config.*
+tsconfig.json
+tsconfig.*.json
+next.config.ts
+
+# 📦 Docker файли
 .dockerignore
 Dockerfile
 docker-compose.yml
-*.log
+docker-compose*.yml
+
+# 🛑 Секрети
+.env
+.env.*
+*.pem
+*.key
+*.crt
+
+# 💻 IDE і локальне
+.vscode
+.idea
+*.swp
+
+# 🍏 macOS
 .DS_Store
 .AppleDouble
 .LSOverride
